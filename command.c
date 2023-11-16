@@ -11,172 +11,212 @@
 #include <netdb.h>
 #include <errno.h>
 
+// Constants
 static const unsigned short CommandPort = 4000;
+static const int MaxConnect = 255;
+static const int BufferSize = 256;
+
+// Global variables for pipe communication
 static int SelfPipe[2];
 
+// Function declarations for external modules
 extern char *imp_Control(int fd, char *tokenPtr);
 extern char *VideoTune(int fd, char *tokenPtr);
 
+// Structure for command handling
 struct CommandTableSt {
-  const char *cmd;
-  char * (*func)(int, char *);
+    const char *cmd;
+    char * (*func)(int, char *);
 };
 
+// Command handling table
 struct CommandTableSt CommandTable[] = {
-  { "imp_control",      &imp_Control },
-  { "video",      &VideoTune },
+    { "imp_control", &imp_Control },
+    { "video", &VideoTune },
+    { NULL, NULL } // End of table marker
 };
 
+// Function to send command response
 void CommandResponse(int fd, const char *res) {
-
-  unsigned char buf[256];
-  buf[0] = strlen(res) + 1;
-  buf[1] = fd;
-  strncpy((char *)buf + 2, res, 253);
-  write(SelfPipe[1], &buf, buf[0] + 2);
-}
-
-static void *CommandThread(void *arg) {
-
-  static const int MaxConnect = 255;
-  int maxFd = 0;
-  fd_set targetFd;
-
-  int listenSocket = socket(AF_INET, SOCK_STREAM, 0);
-  if(listenSocket < 0) {
-    fprintf(stderr, "socket : %s\n", strerror(errno));
-    return NULL;
-  }
-  int sock_optval = 1;
-  if(setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR,
-                &sock_optval, sizeof(sock_optval)) == -1) {
-    fprintf(stderr, "setsockopt : %s\n", strerror(errno));
-    close(listenSocket);
-    return NULL;
-  }
-
-  struct sockaddr_in saddr;
-  saddr.sin_family = AF_INET;
-  saddr.sin_port = htons(CommandPort);
-  saddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  if(bind(listenSocket, (struct sockaddr *)&saddr, sizeof(saddr)) < 0) {
-    fprintf(stderr, "bind : %s\n", strerror(errno));
-    close(listenSocket);
-    return NULL;
-  }
-
-  if(listen(listenSocket, MaxConnect) == -1) {
-    fprintf(stderr, "listen : %s\n", strerror(errno));
-    close(listenSocket);
-    return NULL;
-  }
-
-  FD_ZERO(&targetFd);
-  FD_SET(listenSocket, &targetFd);
-  maxFd = listenSocket;
-  FD_SET(SelfPipe[0], &targetFd);
-  maxFd = (SelfPipe[0] > maxFd) ? SelfPipe[0] : maxFd;
-  if(maxFd >= MaxConnect) maxFd = MaxConnect - 1;
-
-  while(1) {
-    fd_set checkFDs;
-    memcpy(&checkFDs, &targetFd, sizeof(targetFd));
-    if(select(maxFd + 1, &checkFDs, NULL, NULL, NULL) == -1) {
-      fprintf(stderr, "select error : %s\n", strerror(errno));
-    } else {
-      for(int fd = maxFd; fd >= 0; fd--) {
-        if(FD_ISSET(fd, &checkFDs)) {
-          if(fd == SelfPipe[0]) {
-            while(1) {
-              unsigned char buf[256];
-              int length = read(SelfPipe[0], buf, 2);
-              if(length <= 1) break;
-              int resSize = buf[0];
-              int resFd = buf[1];
-              length = read(SelfPipe[0], buf, resSize);
-              if(length < resSize) break;
-              char *res = (char *)buf;
-              if(strlen(res)) {
-                strcat(res, "\n");
-                send(resFd, res, strlen(res) + 1, 0);
-              }
-              close(resFd);
-              FD_CLR(resFd, &targetFd);
-            }
-          } else if(fd == listenSocket) {
-            struct sockaddr_in dstAddr;
-            int len = sizeof(dstAddr);
-            int newSocket = accept(fd, (struct sockaddr *)&dstAddr, (socklen_t *)&len);
-            if(newSocket < 0) {
-              fprintf(stderr, "Socket::Accept Error\n");
-              continue;
-            }
-/*            if(strcmp(inet_ntoa(dstAddr.sin_addr), "127.0.0.1")) {
-              fprintf(stderr, "Rejected request from %s\n", inet_ntoa(dstAddr.sin_addr));
-              close(newSocket);
-              continue;
-            }*/
-            int flag = fcntl(newSocket, F_GETFL, 0);
-            fcntl(newSocket, F_SETFL, O_NONBLOCK|flag);
-            FD_SET(newSocket, &targetFd);
-            maxFd = (newSocket > maxFd) ? newSocket : maxFd;
-            if(maxFd >= MaxConnect) maxFd = MaxConnect - 1;
-          } else {
-            char buf[256];
-            int size = recv(fd, buf, 255, 0);
-            if(!size) {
-              FD_CLR(fd, &targetFd);
-              break;
-            }
-            if(size < 0) {
-              close(fd);
-              FD_CLR(fd, &targetFd);
-              break;
-            }
-            buf[size] = 0;
-            char *tokenPtr;
-            char *p = strtok_r(buf, " \t\r\n", &tokenPtr);
-            if(!p) continue;
-            int executed = 0;
-            for(int i = 0; i < sizeof(CommandTable) / sizeof(struct CommandTableSt); i++) {
-              if(!strcasecmp(p, CommandTable[i].cmd)) {
-                char *res = (*CommandTable[i].func)(fd, tokenPtr);
-                if(res) {
-                  send(fd, res, strlen(res) + 1, 0);
-                  char cr = '\n';
-                  send(fd, &cr, 1, 0);
-                  close(fd);
-                  FD_CLR(fd, &targetFd);
-                }
-                executed = 1;
-                break;
-              }
-            }
-            if(!executed) {
-              char *res = "error";
-              send(fd, res, strlen(res) + 1, 0);
-              close(fd);
-              FD_CLR(fd, &targetFd);
-              fprintf(stderr, "command error : %s\n", p);
-            }
-          }
-         }
-      }
+    if (res == NULL) {
+        return;
     }
-  }
+
+    unsigned char buf[BufferSize];
+    unsigned int len = strlen(res);
+    buf[0] = len > 252 ? 253 : len + 1;
+    buf[1] = fd;
+    strncpy((char *)buf + 2, res, buf[0] - 1);
+    buf[buf[0] + 1] = '\0'; // Ensure null termination
+    write(SelfPipe[1], buf, buf[0] + 2);
 }
 
+// Command processing thread
+static void *CommandThread(void *arg) {
+    // Socket setup
+    int listenSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (listenSocket < 0) {
+        fprintf(stderr, "socket error: %s\n", strerror(errno));
+        return NULL;
+    }
+
+    int sock_optval = 1;
+    if (setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &sock_optval, sizeof(sock_optval)) == -1) {
+        fprintf(stderr, "setsockopt error: %s\n", strerror(errno));
+        close(listenSocket);
+        return NULL;
+    }
+
+    struct sockaddr_in saddr = {
+        .sin_family = AF_INET,
+        .sin_port = htons(CommandPort),
+        .sin_addr.s_addr = htonl(INADDR_ANY)
+    };
+
+    if (bind(listenSocket, (struct sockaddr *)&saddr, sizeof(saddr)) < 0) {
+        fprintf(stderr, "bind error: %s\n", strerror(errno));
+        close(listenSocket);
+        return NULL;
+    }
+
+    if (listen(listenSocket, MaxConnect) == -1) {
+        fprintf(stderr, "listen error: %s\n", strerror(errno));
+        close(listenSocket);
+        return NULL;
+    }
+
+    fd_set targetFd;
+    FD_ZERO(&targetFd);
+    FD_SET(listenSocket, &targetFd);
+    int maxFd = listenSocket;
+    FD_SET(SelfPipe[0], &targetFd);
+    if (SelfPipe[0] > maxFd) {
+        maxFd = SelfPipe[0];
+    }
+
+    // Command processing loop
+    while (1) {
+        fd_set checkFDs = targetFd;
+        int selectResult = select(maxFd + 1, &checkFDs, NULL, NULL, NULL);
+        if (selectResult == -1) {
+            fprintf(stderr, "select error: %s\n", strerror(errno));
+            continue;
+        }
+
+        // Check each file descriptor
+        for (int fd = 0; fd <= maxFd; fd++) {
+            if (!FD_ISSET(fd, &checkFDs)) {
+                continue;
+            }
+
+            if (fd == SelfPipe[0]) {
+                // Handle self-pipe for internal communication
+                unsigned char buf[BufferSize];
+                while (1) {
+                    int length = read(SelfPipe[0], buf, 2);
+                    if (length <= 1) {
+                        break;
+                    }
+                    int resSize = buf[0];
+                    int resFd = buf[1];
+                    length = read(SelfPipe[0], buf, resSize);
+                    if (length < resSize) {
+                        break;
+                    }
+                    char *res = (char *)buf;
+                    strcat(res, "\n");
+                    send(resFd, res, strlen(res) + 1, 0);
+                    close(resFd);
+                    FD_CLR(resFd, &targetFd);
+                }
+            } else if (fd == listenSocket) {
+                // Handle new incoming connections
+                struct sockaddr_in dstAddr;
+                socklen_t len = sizeof(dstAddr);
+                int newSocket = accept(fd, (struct sockaddr *)&dstAddr, &len);
+                if (newSocket < 0) {
+                    fprintf(stderr, "accept error\n");
+                    continue;
+                }
+
+                // Set socket to non-blocking mode
+                int flags = fcntl(newSocket, F_GETFL, 0);
+                fcntl(newSocket, F_SETFL, O_NONBLOCK | flags);
+
+                FD_SET(newSocket, &targetFd);
+                if (newSocket > maxFd) {
+                    maxFd = newSocket;
+                }
+                if (maxFd >= MaxConnect) {
+                    maxFd = MaxConnect - 1;
+                }
+            } else {
+                // Handle data from clients
+                char buf[BufferSize];
+                int size = recv(fd, buf, BufferSize - 1, 0);
+                if (size <= 0) {
+                    close(fd);
+                    FD_CLR(fd, &targetFd);
+                    continue;
+                }
+                buf[size] = '\0'; // Null-terminate the received data
+
+                char *tokenPtr;
+                char *command = strtok_r(buf, " \t\r\n", &tokenPtr);
+                if (command == NULL) {
+                    continue;
+                }
+
+                int executed = 0;
+                for (int i = 0; CommandTable[i].cmd != NULL; i++) {
+                    if (strcasecmp(command, CommandTable[i].cmd) == 0) {
+                        char *response = CommandTable[i].func(fd, tokenPtr);
+                        if (response) {
+                            send(fd, response, strlen(response) + 1, 0);
+                            char cr = '\n';
+                            send(fd, &cr, 1, 0);
+                            close(fd);
+                            FD_CLR(fd, &targetFd);
+                        }
+                        executed = 1;
+                        break;
+                    }
+                }
+
+                if (!executed) {
+                    char *error_msg = "Unknown command";
+                    send(fd, error_msg, strlen(error_msg) + 1, 0);
+                    close(fd);
+                    FD_CLR(fd, &targetFd);
+                    fprintf(stderr, "Unknown command received: %s\n", command);
+                }
+            }
+        }
+    }
+
+    close(listenSocket);
+    return NULL;
+}
+
+// Initialization function
 static void __attribute ((constructor)) command_init(void) {
+    if (pipe(SelfPipe) != 0) {
+        fprintf(stderr, "pipe creation error\n");
+        return;
+    }
 
-  if(pipe(SelfPipe)) {
-    fprintf(stderr, "pipe error\n");
-    return;
-  }
-  int flag = fcntl(SelfPipe[0], F_GETFL, 0);
-  fcntl(SelfPipe[0], F_SETFL, O_NONBLOCK|flag);
-  flag = fcntl(SelfPipe[1], F_GETFL, 0);
-  fcntl(SelfPipe[1], F_SETFL, O_NONBLOCK|flag);
+    // Set pipe to non-blocking mode
+    for (int i = 0; i < 2; i++) {
+        int flags = fcntl(SelfPipe[i], F_GETFL, 0);
+        fcntl(SelfPipe[i], F_SETFL, O_NONBLOCK | flags);
+    }
 
-  pthread_t thread;
-  pthread_create(&thread, NULL, CommandThread, NULL);
+    pthread_t thread;
+    if (pthread_create(&thread, NULL, CommandThread, NULL) != 0) {
+        fprintf(stderr, "thread creation error\n");
+        return;
+    }
+
+    // Detach the thread to free resources when it's finished
+    pthread_detach(thread);
 }
