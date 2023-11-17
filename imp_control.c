@@ -10,8 +10,11 @@
 #include <sys/ioctl.h>
 #include <pthread.h>
 #include "version.h"
+#include <signal.h>
 
-// Audio
+///////////
+// Audio //
+///////////
 
 static const int AudioDeviceID = 0;
 static const int AudioChID = 0;
@@ -25,7 +28,7 @@ typedef struct {
   int chnCnt;  // Number of channels supported.
 } IMPAudioIOAttr;
 
-// attribute of the audio input device.
+// Attribute of the audio input device.
 extern int IMP_AI_SetPubAttr(int audioDevId, IMPAudioIOAttr *attr);
 extern int IMP_AI_GetPubAttr(int audioDevId, IMPAudioIOAttr *attr);
 
@@ -45,41 +48,43 @@ extern int IMP_AI_EnableNs(IMPAudioIOAttr *attr, int mode);
 extern int IMP_AI_DisableAec(int aiDevId, int aiCh);
 extern int IMP_AI_EnableAec(int aiDevId, int aiChn, int aoDevId, int aoChn);
 
-// audio input volume. -30 - 120, default: 60
+// Audio input volume. -30 - 120, default: 60
 extern int IMP_AI_SetVol(int audioDevId, int aiChn, int aiVol);
 extern int IMP_AI_GetVol(int audioDevId, int aiChn, int *vol);
 
-// audio input gain. 0 - 31
+// Audio input gain. 0 - 31
 extern int IMP_AI_SetGain(int audioDevId, int aiChn, int aiGain);
 extern int IMP_AI_GetGain(int audioDevId, int aiChn, int *aiGain);
 
-//alc gain value. 0 - 7
+// ALC gain value. 0 - 7
 extern int IMP_AI_SetAlcGain(int audioDevId, int aiChn, int aiPgaGain);
 extern int IMP_AI_GetAlcGain(int audioDevId, int aiChn, int *aiPgaGain);
 
-// audio output volume. -30 - 120, default: 60
+// Audio output volume. -30 - 120, default: 60
 extern int IMP_AO_SetVol(int audioDevId, int aoChn, int aoVol);
 extern int IMP_AO_GetVol(int audioDevId, int aoChn, int *vol);
 
-// audio output gain. 0 - 31
+// Audio output gain. 0 - 31
 extern int IMP_AO_SetGain(int audioDevId, int aoChn, int aoGain);
 extern int IMP_AO_GetGain(int audioDevId, int aoChn, int *aoGain);
 
-// Video begin
+/////////////////
+// Video begin //
+/////////////////
 
-// contrast of image effect.
+// Contrast
 extern int IMP_ISP_Tuning_SetContrast(unsigned char contrast);
 extern int IMP_ISP_Tuning_GetContrast(unsigned char *pcontrast);
 
-// brightness of image effect.
+// Brightness
 extern int IMP_ISP_Tuning_SetBrightness(unsigned char bright);
 extern int IMP_ISP_Tuning_GetBrightness(unsigned char *pbright);
 
-// saturation of image effect.
+// Saturation
 extern int IMP_ISP_Tuning_SetSaturation(unsigned char sat);
 extern int IMP_ISP_Tuning_GetSaturation(unsigned char *psat);
 
-// sharpness of image effect.
+// Sharpness
 extern int IMP_ISP_Tuning_SetSharpness(unsigned char sharpness);
 extern int IMP_ISP_Tuning_GetSharpness(unsigned char *psharpness);
 
@@ -100,7 +105,7 @@ extern int IMP_ISP_Tuning_GetDPC_Strength(unsigned int *ratio);
 extern int IMP_ISP_Tuning_SetDRC_Strength(unsigned int ratio);
 extern int IMP_ISP_Tuning_GetDRC_Strength(unsigned int *ratio);
 
-// highlight intensity controls.
+// Highlight intensity controls.
 extern int IMP_ISP_Tuning_SetHiLightDepress(uint32_t strength);
 extern int IMP_ISP_Tuning_GetHiLightDepress(uint32_t *strength);
 
@@ -126,10 +131,11 @@ extern int IMP_ISP_Tuning_GetISPHflip(int *pmode);
 extern int IMP_ISP_Tuning_SetISPVflip(int mode);
 extern int IMP_ISP_Tuning_GetISPVflip(int *pmode);
 
-// new for majestic
+// Hue
 extern int IMP_ISP_Tuning_SetBcshHue(unsigned char hue);
 extern int IMP_ISP_Tuning_GetBcshHue(unsigned char *hue);
 
+// ISP Day / Night mode
 typedef enum {
         IMPISP_RUNNING_MODE_DAY = 0,
         IMPISP_RUNNING_MODE_NIGHT = 1,
@@ -138,7 +144,7 @@ typedef enum {
 extern int IMP_ISP_Tuning_SetISPRunningMode(IMPISPRunningMode mode);
 extern int IMP_ISP_Tuning_GetISPRunningMode(IMPISPRunningMode *pmode);
 
-
+// ISP Anti-Flicker effect
 typedef enum {
         IMPISP_ANTIFLICKER_DISABLE = 0,
         IMPISP_ANTIFLICKER_50HZ = 1,
@@ -148,12 +154,14 @@ typedef enum {
 extern int IMP_ISP_Tuning_SetAntiFlickerAttr(IMPISPAntiflickerAttr attr);
 extern int IMP_ISP_Tuning_GetAntiFlickerAttr(IMPISPAntiflickerAttr *pattr);
 
+// ISP Gamma
 typedef struct {
         uint16_t gamma[129];
 } IMPISPGamma;
 
 extern int IMP_ISP_Tuning_GetGamma(IMPISPGamma *gamma);
 
+// ISP AutoZoom
 typedef struct {
     int chan;
     int scaler_enable;
@@ -166,6 +174,7 @@ typedef struct {
     int crop_height;
 } IMPISPAutoZoom;
 
+// ISP Front Crop
 extern int IMP_ISP_Tuning_SetAutoZoom(IMPISPAutoZoom *ispautozoom);
 
 typedef struct {
@@ -179,7 +188,7 @@ typedef struct {
 extern int IMP_ISP_Tuning_SetFrontCrop(IMPISPFrontCrop *ispfrontcrop);
 extern int IMP_ISP_Tuning_GetFrontCrop(IMPISPFrontCrop *ispfrontcrop);
 
-
+// ISP Masking Zone
 typedef enum {
         IMPISP_MASK_TYPE_RGB = 0,
         IMPISP_MASK_TYPE_YUV = 1,
@@ -217,6 +226,7 @@ typedef struct {
 extern int IMP_ISP_Tuning_SetMask(IMPISPMASKAttr *mask);
 extern int IMP_ISP_Tuning_GetMask(IMPISPMASKAttr *mask);
 
+// ISP White Balance
 typedef enum isp_core_wb_mode {
         ISP_CORE_WB_MODE_AUTO = 0,
         ISP_CORE_WB_MODE_MANUAL = 1,
@@ -239,13 +249,17 @@ typedef struct isp_core_wb_attr{
 extern int IMP_ISP_Tuning_SetWB(IMPISPWB *wb);
 extern int IMP_ISP_Tuning_GetWB(IMPISPWB *wb);
 
+// ISP Sensor FPS
 extern int IMP_ISP_Tuning_SetSensorFPS(uint32_t fps_num, uint32_t fps_den);
 extern int IMP_ISP_Tuning_GetSensorFPS(uint32_t *fps_num, uint32_t *fps_den);
 
+// ISP Backlight Compensation
 extern int IMP_ISP_Tuning_SetBacklightComp(uint32_t strength);
 extern int IMP_ISP_Tuning_GetBacklightComp(uint32_t *strength);
 
-// begin AI
+//////////////
+// Begin AI //
+//////////////
 
 static char audioResBuf[256];
 
@@ -357,7 +371,7 @@ static char *AlcGain(char *tokenPtr) {
   return ret ? "error" : "ok";
 }
 
-// begin AO
+// AO
 static char *aoVolume(char *tokenPtr) {
 
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
@@ -386,7 +400,10 @@ static char *aoGain(char *tokenPtr) {
   return ret ? "error" : "ok";
 }
 
-// begin video
+/////////////////
+// Begin video //
+/////////////////
+
 static char videoResBuf[1024];
 
 static char *Flip(char *tokenPtr) {
@@ -579,7 +596,7 @@ static char *DGain(char *tokenPtr) {
   return res ? "error": "ok";
 }
 
-// new for majestic
+// New
 
 static char *Hue(char *tokenPtr) {
 
@@ -675,7 +692,7 @@ static char *SetAutoZoom(char *tokenPtr) {
     return response;
 }
 
-// example : fcrop 1 180 320 1280 720
+// Example : fcrop 1 180 320 1280 720
 // fcrop <enable> <top> <left> <width> <height>
 static char *FrontCrop(char *tokenPtr) {
     IMPISPFrontCrop frontCropParams;
@@ -724,7 +741,7 @@ static char *FrontCrop(char *tokenPtr) {
 }
 
 
-// example: video mask 0 1 100 100 400 400 100 100 100
+// Example: video mask 0 1 100 100 400 400 100 100 100
 // mask <channel> <mask_en> <mask_pos_top> <mask_pos_left> <mask_width> <mask_height> <Red> <Green> <Blue>
 static char *Mask(char *tokenPtr) {
     IMPISPMASKAttr maskAttr;
@@ -792,7 +809,7 @@ static char *Mask(char *tokenPtr) {
     return response;
 }
 
-// I think rgain and bagin has to be on manual mode...
+// rgain and bgain should work on manual mode?
 static char *WhiteBalance(char *tokenPtr) {
     IMPISPWB wb;
     char *response = "error";
@@ -910,8 +927,9 @@ static char *BacklightComp(char *tokenPtr) {
 }
 
 
-/////////////////
-// begin commands
+///////////////////
+// Command Table //
+///////////////////
 struct CommandTableSt {
   const char *cmd;
   char * (*func)(char *);
@@ -1007,11 +1025,25 @@ char *IMPTune(int fd, char *tokenPtr) {
   return "error";
 }
 
+
+typedef void (*sighandler_t)(int);
+static sighandler_t original_sigint_handler = NULL;
+
+void custom_sigint_handler(int signum) {
+    // Call the original SIGINT handler
+    if (original_sigint_handler) {
+        original_sigint_handler(signum);
+    }
+}
+
 __attribute__((constructor))
 void libimp_initializer(void) {
     // Code to be executed when the library is loaded
     printf("Library loaded, initializing...\n");
     printf("\nLIBIMP_CONTROL Version: %s\n", VERSION);
+    // Save the original SIGINT handler and set the custom one
+    original_sigint_handler = signal(SIGINT, custom_sigint_handler);
+
 }
 
 __attribute__((destructor))
