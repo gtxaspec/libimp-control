@@ -971,38 +971,93 @@ static struct CommandTableSt imp_ControlTable[] = {
 /*
 
 todo:
-DPS // t20 only
-IMP_ISP_Tuning_SetISPBypass(IMPISPTuningOpsMode enable);
-
-IMP_ISP_Tuning_SetISPCustomMode(IMPISPTuningOpsMode mode);
-
-IMP_ISP_Tuning_SetWB_ALGO(IMPISPAWBAlgo wb_algo);
-IMP_ISP_Tuning_SetAeFreeze(IMPISPTuningOpsMode mode);
-IMP_ISP_Tuning_SetExpr(IMPISPExpr *expr);
-IMP_ISP_Tuning_SetAwbClust(IMPISPAWBCluster *awb_cluster);
-IMP_ISP_Tuning_SetAwbCtTrend(IMPISPAWBCtTrend *ct_trend);
-IMP_ISP_Tuning_SetBacklightComp(uint32_t strength);
-IMP_ISP_Tuning_SetAeWeight(IMPISPWeight *ae_weight);
-IMP_ISP_Tuning_SetAwbWeight(IMPISPWeight *awb_weight);
-IMP_ISP_Tuning_SetAeHist(IMPISPAEHist *ae_hist);
-IMP_ISP_Tuning_SetAwbHist(IMPISPAWBHist *awb_hist);
-IMP_ISP_Tuning_SetAfHist(IMPISPAFHist *af_hist);
-IMP_ISP_Tuning_SetAfWeight(IMPISPWeight *af_weight);
-IMP_ISP_Tuning_SetAeMin(IMPISPAEMin *ae_min);
-IMP_ISP_Tuning_SetAe_IT_MAX(unsigned int it_max);
-IMP_ISP_Tuning_SetAeTargetList(IMPISPAETargetList *at_list);
-IMP_ISP_Tuning_SetModuleControl(IMPISPModuleCtl *ispmodule);
-IMP_ISP_Tuning_SetAwbCt(unsigned int *ct);
-IMP_ISP_Tuning_SetCCMAttr(IMPISPCCMAttr *ccm);
-IMP_ISP_Tuning_SetAeAttr(IMPISPAEAttr *ae);
-IMP_ISP_Tuning_SetScalerLv(IMPISPScalerLv *scaler_level);
-
-IMP_ISP_Tuning_EnableDefog(IMPISPTuningOpsMode mode)
-IMP_ISP_Tuning_SetDefog_Strength(uint8_t *ratio);
-
-IMP_ISP_Tuning_SetCsc_Attr(IMPISPCscAttr *attr);
-IMP_ISP_Tuning_SetWdr_OutputMode(IMPISPWdrOutputMode *mode);
-
+DPS // T20 only
+// Get all T20/T40/T41 specific functions too
+int32_t IMP_ISP_SetDefaultBinPath(char *path)
+int32_t IMP_ISP_GetDefaultBinPath(char *path)
+int IMP_ISP_EnableTuning(void)
+int IMP_ISP_DisableTuning(void)
+int IMP_ISP_Tuning_SetISPBypass(IMPISPTuningOpsMode enable)
+int IMP_ISP_Tuning_GetTotalGain(uint32_t *gain)
+int IMP_ISP_Tuning_SetISPRunningMode(IMPISPRunningMode mode)
+int IMP_ISP_Tuning_GetISPRunningMode(IMPISPRunningMode *pmode)
+int IMP_ISP_Tuning_SetISPCustomMode(IMPISPTuningOpsMode mode)
+int IMP_ISP_Tuning_GetISPCustomMode(IMPISPTuningOpsMode mode)
+int IMP_ISP_Tuning_SetGamma(IMPISPGamma *gamma)
+int IMP_ISP_Tuning_GetGamma(IMPISPGamma *gamma)
+int IMP_ISP_Tuning_GetAeLuma(int *luma)
+int IMP_ISP_Tuning_SetAeFreeze(IMPISPTuningOpsMode mode)
+int IMP_ISP_Tuning_SetExpr(IMPISPExpr *expr)
+int IMP_ISP_Tuning_GetExpr(IMPISPExpr *expr)
+IMP_ISP_Tuning_GetWB_Statis(IMPISPWB *wb)
+IMP_ISP_Tuning_GetWB_GOL_Statis(IMPISPWB *wb)
+int IMP_ISP_Tuning_SetAwbClust(IMPISPAWBCluster *awb_cluster);
+int IMP_ISP_Tuning_GetAwbClust(IMPISPAWBCluster *awb_cluster);
+int IMP_ISP_Tuning_SetAwbCtTrend(IMPISPAWBCtTrend *ct_trend);
+int IMP_ISP_Tuning_GetAwbCtTrend(IMPISPAWBCtTrend *ct_trend);
+int IMP_ISP_Tuning_Awb_GetRgbCoefft(IMPISPCOEFFTWB *isp_core_rgb_coefft_wb_attr);
+int IMP_ISP_Tuning_Awb_SetRgbCoefft(IMPISPCOEFFTWB *isp_core_rgb_coefft_wb_attr)
+int IMP_ISP_Tuning_GetEVAttr(IMPISPEVAttr *attr)
+int IMP_ISP_Tuning_EnableMovestate(void)
+IMP_ISP_Tuning_DisableMovestate(void)
+int IMP_ISP_Tuning_SetAeWeight(IMPISPWeight *ae_weight)
+int IMP_ISP_Tuning_GetAeWeight(IMPISPWeight *ae_weight)
+int IMP_ISP_Tuning_AE_GetROI(IMPISPWeight *roi_weight)
+int IMP_ISP_Tuning_AE_SetROI(IMPISPWeight *roi_weight)
+int IMP_ISP_Tuning_SetAwbWeight(IMPISPWeight *awb_weight)
+int IMP_ISP_Tuning_GetAwbWeight(IMPISPWeight *awb_weight)
+int IMP_ISP_Tuning_GetAwbZone(IMPISPAWBZONE *awb_zone)
+int IMP_ISP_Tuning_SetWB_ALGO(IMPISPAWBALGO wb_algo)
+int IMP_ISP_Tuning_SetAeHist(IMPISPAEHist *ae_hist)
+int IMP_ISP_Tuning_GetAeHist(IMPISPAEHist *ae_hist)
+int IMP_ISP_Tuning_GetAeHist_Origin(IMPISPAEHistOrigin *ae_hist)
+int IMP_ISP_Tuning_GetAwbHist(IMPISPAWBHist *awb_hist)
+int IMP_ISP_Tuning_SetAwbHist(IMPISPAWBHist *awb_hist)
+int int IMP_ISP_Tuning_GetAFMetrices(unsigned int *metric);
+int IMP_ISP_Tuning_GetAfHist(IMPISPAFHist *af_hist);
+int IMP_ISP_Tuning_SetAfHist(IMPISPAFHist *af_hist)
+int IMP_ISP_Tuning_SetAfWeight(IMPISPWeight *af_weight)
+int IMP_ISP_Tuning_GetAfWeight(IMPISPWeight *af_weight)
+int IMP_ISP_Tuning_GetAfZone(IMPISPZone *af_zone)
+int IMP_ISP_Tuning_WaitFrame(IMPISPWaitFrameAttr *attr)
+int IMP_ISP_Tuning_SetAeMin(IMPISPAEMin *ae_min)
+int IMP_ISP_Tuning_GetAeMin(IMPISPAEMin *ae_min)
+int IMP_ISP_Tuning_SetAe_IT_MAX(unsigned int it_max)
+int IMP_ISP_Tuning_GetAE_IT_MAX(unsigned int *it_max)
+int IMP_ISP_Tuning_GetAeZone(IMPISPZone *ae_zone)
+int IMP_ISP_Tuning_GetAeTargetList(IMPISPAETargetList *at_list)
+int IMP_ISP_Tuning_GetAeTargetList(IMPISPAETargetList *at_list)
+int IMP_ISP_Tuning_SetModuleControl(IMPISPModuleCtl *ispmodule)
+int IMP_ISP_Tuning_GetModuleControl(IMPISPModuleCtl *ispmodule)
+int IMP_ISP_Tuning_SetFrontCrop(IMPISPFrontCrop *ispfrontcrop)
+int IMP_ISP_Tuning_GetFrontCrop(IMPISPFrontCrop *ispfrontcrop)
+int IMP_ISP_WDR_ENABLE(IMPISPTuningOpsMode mode)
+IMP_ISP_WDR_ENABLE_Get(IMPISPTuningOpsMode* mode)
+int IMP_ISP_Tuning_GetSensorAttr(IMPISPSENSORAttr *attr)
+int IMP_ISP_Tuning_EnableDRC(IMPISPTuningOpsMode mode)
+int IMP_ISP_Tuning_EnableDefog(IMPISPTuningOpsMode mode)
+int IMP_ISP_Tuning_SetAwbCt(unsigned int *ct)
+int IMP_ISP_Tuning_GetAWBCt(unsigned int *ct)
+int IMP_ISP_Tuning_SetCCMAttr(IMPISPCCMAttr *ccm)
+int IMP_ISP_Tuning_GetCCMAttr(IMPISPCCMAttr *ccm)
+int IMP_ISP_Tuning_SetAeAttr(IMPISPAEAttr *ae)
+int IMP_ISP_Tuning_GetAeAttr(IMPISPAEAttr *ae)
+int IMP_ISP_Tuning_GetAeState(IMPISPAEState *ae_state)
+int IMP_ISP_Tuning_SetScalerLv(IMPISPScalerLv *scaler_level)
+int32_t IMP_ISP_SetAeAlgoFunc(IMPISPAeAlgoFunc *ae_func)
+int32_t IMP_ISP_SetAwbAlgoFunc(IMPISPAwbAlgoFunc *awb_func)
+int IMP_ISP_Tuning_GetBlcAttr(IMPISPBlcAttr *blc)
+int32_t IMP_ISP_Tuning_SetDefog_Strength(uint8_t *ratio)
+int32_t IMP_ISP_Tuning_GetDefog_Strength(uint8_t *ratio)
+int32_t IMP_ISP_Tuning_SetCsc_Attr(IMPISPCscAttr *attr)
+int32_t IMP_ISP_Tuning_GetCsc_Attr(IMPISPCscAttr *attr)
+int32_t IMP_ISP_Tuning_SetWdr_OutputMode(IMPISPWdrOutputMode *mode)
+int32_t IMP_ISP_Tuning_GetWdr_OutputMode(IMPISPWdrOutputMode *mode)
+int32_t IMP_ISP_SetFrameDrop(IMPISPFrameDropAttr *attr)
+int32_t IMP_ISP_GetFrameDrop(IMPISPFrameDropAttr *attr)
+int32_t IMP_ISP_SetFixedContraster(IMPISPFixedContrastAttr *attr)
+int32_t IMP_ISP_SET_GPIO_INIT_OR_FREE(IMPISPGPIO *gpio)
+int32_t IMP_ISP_SET_GPIO_STA(IMPISPGPIO *attr);
 */
 
 char *IMPTune(int fd, char *tokenPtr) {
