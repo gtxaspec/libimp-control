@@ -20,8 +20,7 @@ static const int BufferSize = 256;
 static int SelfPipe[2];
 
 // Function declarations for external modules
-extern char *imp_Control(int fd, char *tokenPtr);
-extern char *VideoTune(int fd, char *tokenPtr);
+extern char *IMPTune(int fd, char *tokenPtr);
 
 // Structure for command handling
 struct CommandTableSt {
@@ -31,8 +30,7 @@ struct CommandTableSt {
 
 // Command handling table
 struct CommandTableSt CommandTable[] = {
-    { "imp_control", &imp_Control },
-    { "video", &VideoTune },
+    { "imp_control", &IMPTune },
     { NULL, NULL } // End of table marker
 };
 

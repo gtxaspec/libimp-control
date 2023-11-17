@@ -11,6 +11,62 @@
 #include <pthread.h>
 #include "version.h"
 
+// Audio
+
+static const int AudioDeviceID = 0;
+static const int AudioChID = 0;
+
+typedef struct {
+  int samplerate; // Audio sampling rate.
+  int bitwidth; // Audio sampling precision. 16 bit
+  int soundmode; // Audio channel mode. 1(mono)
+  int frmNum;  // Number of cached frames, range: [2, MAX_AUDIO_FRAME_NUM].
+  int numPerFrm; // Number of sample points per frame.
+  int chnCnt;  // Number of channels supported.
+} IMPAudioIOAttr;
+
+// attribute of the audio input device.
+extern int IMP_AI_SetPubAttr(int audioDevId, IMPAudioIOAttr *attr);
+extern int IMP_AI_GetPubAttr(int audioDevId, IMPAudioIOAttr *attr);
+
+// AI high pass filtering function.
+extern int IMP_AI_DisableHpf();
+extern int IMP_AI_EnableHpf(IMPAudioIOAttr *attr);
+
+// AI automatic gain feature.
+extern int IMP_AI_DisableAgc();
+extern int IMP_AI_EnableAgc(IMPAudioIOAttr *attr, short TargetLevelDbfs, short CompressionGaindB);
+
+// Noise suppression.
+extern int IMP_AI_DisableNs();
+extern int IMP_AI_EnableNs(IMPAudioIOAttr *attr, int mode);
+
+// Enable audio echo cancellation feature of the specified audio input and audio output.
+extern int IMP_AI_DisableAec(int aiDevId, int aiCh);
+extern int IMP_AI_EnableAec(int aiDevId, int aiChn, int aoDevId, int aoChn);
+
+// audio input volume. -30 - 120, default: 60
+extern int IMP_AI_SetVol(int audioDevId, int aiChn, int aiVol);
+extern int IMP_AI_GetVol(int audioDevId, int aiChn, int *vol);
+
+// audio input gain. 0 - 31
+extern int IMP_AI_SetGain(int audioDevId, int aiChn, int aiGain);
+extern int IMP_AI_GetGain(int audioDevId, int aiChn, int *aiGain);
+
+//alc gain value. 0 - 7
+extern int IMP_AI_SetAlcGain(int audioDevId, int aiChn, int aiPgaGain);
+extern int IMP_AI_GetAlcGain(int audioDevId, int aiChn, int *aiPgaGain);
+
+// audio output volume. -30 - 120, default: 60
+extern int IMP_AO_SetVol(int audioDevId, int aoChn, int aoVol);
+extern int IMP_AO_GetVol(int audioDevId, int aoChn, int *vol);
+
+// audio output gain. 0 - 31
+extern int IMP_AO_SetGain(int audioDevId, int aoChn, int aoGain);
+extern int IMP_AO_GetGain(int audioDevId, int aoChn, int *aoGain);
+
+// Video begin
+
 // contrast of image effect.
 extern int IMP_ISP_Tuning_SetContrast(unsigned char contrast);
 extern int IMP_ISP_Tuning_GetContrast(unsigned char *pcontrast);
@@ -183,8 +239,154 @@ typedef struct isp_core_wb_attr{
 extern int IMP_ISP_Tuning_SetWB(IMPISPWB *wb);
 extern int IMP_ISP_Tuning_GetWB(IMPISPWB *wb);
 
+extern int IMP_ISP_Tuning_SetSensorFPS(uint32_t fps_num, uint32_t fps_den);
+extern int IMP_ISP_Tuning_GetSensorFPS(uint32_t *fps_num, uint32_t *fps_den);
 
-///begin
+extern int IMP_ISP_Tuning_SetBacklightComp(uint32_t strength);
+extern int IMP_ISP_Tuning_GetBacklightComp(uint32_t *strength);
+
+// begin AI
+
+static char audioResBuf[256];
+
+static char *HighPassFilter(char *tokenPtr) {
+
+  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+  int ret = -1;
+  if(p && !strcmp(p, "off")) {
+    ret = IMP_AI_DisableHpf();
+  }
+  if(p && !strcmp(p, "on")) {
+    IMPAudioIOAttr attr;
+    ret = IMP_AI_GetPubAttr(AudioDeviceID, &attr);
+    if(!ret) ret = IMP_AI_EnableHpf(&attr);
+  }
+  return ret ? "error" : "ok";
+}
+
+static char *AutoGainControl(char *tokenPtr) {
+
+  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+  if(!p) return "error";
+
+  int ret = -1;
+  if(!strcmp(p, "off")) {
+    // ret = IMP_AI_DisableAgc(); // Exception
+  } else {
+    int targetLevelDbfs = atoi(p);
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    if(p) {
+      int compressionGaindB = atoi(p);
+      IMPAudioIOAttr attr;
+      ret = IMP_AI_GetPubAttr(AudioDeviceID, &attr);
+      if(!ret) ret = IMP_AI_EnableAgc(&attr, targetLevelDbfs, compressionGaindB);
+    }
+  }
+  return ret ? "error" : "ok";
+}
+
+static char *NoiseSuppression(char *tokenPtr) {
+
+  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+  if(!p) return "error";
+
+  int ret = -1;
+  if(!strcmp(p, "off")) {
+    ret = IMP_AI_DisableNs();
+  } else {
+    int level = atoi(p);
+    IMPAudioIOAttr attr;
+    ret = IMP_AI_GetPubAttr(AudioDeviceID, &attr);
+    if(!ret) ret = IMP_AI_EnableNs(&attr, level);
+  }
+  return ret ? "error" : "ok";
+}
+
+static char *EchoCancellation(char *tokenPtr) {
+
+  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+  int ret = -1;
+  if(p && !strcmp(p, "off")) {
+    ret = IMP_AI_DisableAec(AudioDeviceID, AudioChID);
+  }
+  if(p && !strcmp(p, "on")) {
+    ret = IMP_AI_EnableAec(AudioDeviceID, AudioChID, AudioDeviceID, AudioChID);
+  }
+  return ret ? "error" : "ok";
+}
+
+static char *Volume(char *tokenPtr) {
+
+  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+  if(!p) {
+    int vol;
+    int ret = IMP_AI_GetVol(AudioDeviceID, AudioChID, &vol);
+    if(ret) return "error";
+    sprintf(audioResBuf, "%d", vol);
+    return audioResBuf;
+  }
+  int ret = IMP_AI_SetVol(AudioDeviceID, AudioChID, atoi(p));
+  return ret ? "error" : "ok";
+}
+
+static char *Gain(char *tokenPtr) {
+
+  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+  if(!p) {
+    int gain;
+    int ret = IMP_AI_GetGain(AudioDeviceID, AudioChID, &gain);
+    if(ret) return "error";
+    sprintf(audioResBuf, "%d", gain);
+    return audioResBuf;
+  }
+  int ret = IMP_AI_SetGain(AudioDeviceID, AudioChID, atoi(p));
+  return ret ? "error" : "ok";
+}
+
+static char *AlcGain(char *tokenPtr) {
+
+  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+  if(!p) {
+    int gain;
+    int ret = IMP_AI_GetAlcGain(AudioDeviceID, AudioChID, &gain);
+    if(ret) return "error";
+    sprintf(audioResBuf, "%d", gain);
+    return audioResBuf;
+  }
+  int ret = IMP_AI_SetAlcGain(AudioDeviceID, AudioChID, atoi(p));
+  return ret ? "error" : "ok";
+}
+
+// begin AO
+static char *aoVolume(char *tokenPtr) {
+
+  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+  if(!p) {
+    int vol;
+    int ret = IMP_AO_GetVol(AudioDeviceID, AudioChID, &vol);
+    if(ret) return "error";
+    sprintf(audioResBuf, "%d", vol);
+    return audioResBuf;
+  }
+  int ret = IMP_AO_SetVol(AudioDeviceID, AudioChID, atoi(p));
+  return ret ? "error" : "ok";
+}
+
+static char *aoGain(char *tokenPtr) {
+
+  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+  if(!p) {
+    int gain;
+    int ret = IMP_AO_GetGain(AudioDeviceID, AudioChID, &gain);
+    if(ret) return "error";
+    sprintf(audioResBuf, "%d", gain);
+    return audioResBuf;
+  }
+  int ret = IMP_AO_SetGain(AudioDeviceID, AudioChID, atoi(p));
+  return ret ? "error" : "ok";
+}
+
+// begin video
 static char videoResBuf[1024];
 
 static char *Flip(char *tokenPtr) {
@@ -396,9 +598,9 @@ static char *Mode(char *tokenPtr) {
 
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
-    IMPISPRunningMode ispmode;
-    IMP_ISP_Tuning_GetISPRunningMode(&ispmode);
-    sprintf(videoResBuf, "%d", ispmode);
+    IMPISPRunningMode mode;
+    IMP_ISP_Tuning_GetISPRunningMode(&mode);
+    sprintf(videoResBuf, "%d", mode);
     return videoResBuf;
   }
   int res = IMP_ISP_Tuning_SetISPRunningMode(atoi(p));
@@ -590,8 +792,6 @@ static char *Mask(char *tokenPtr) {
     return response;
 }
 
-
-// wb <mode> [rgain] [bgain]
 // I think rgain and bagin has to be on manual mode...
 static char *WhiteBalance(char *tokenPtr) {
     IMPISPWB wb;
@@ -632,6 +832,84 @@ static char *WhiteBalance(char *tokenPtr) {
     return response;
 }
 
+static char *SensorFPS(char *tokenPtr) {
+    char *response = "error";
+    char *p;
+    uint32_t fps_num = 0, fps_den = 0;
+    int parsedFields = 0;
+
+    // Parse parameters from the input string
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    while (p != NULL) {
+        if (parsedFields == 0) {
+            fps_num = (uint32_t)atoi(p);
+        } else if (parsedFields == 1) {
+            fps_den = (uint32_t)atoi(p);
+        } else {
+            break; // No more than two parameters expected
+        }
+        p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+        parsedFields++;
+    }
+
+    // Get current sensor FPS if no parameters are provided
+    if (parsedFields == 0) {
+        int res = IMP_ISP_Tuning_GetSensorFPS(&fps_num, &fps_den);
+        if (res == 0) {
+            static char buffer[64];
+            sprintf(buffer, "Current FPS: %u/%u", fps_num, fps_den);
+            return buffer;
+        }
+    }
+    // Set new sensor FPS if parameters are provided
+    else if (parsedFields == 2) {
+        int res = IMP_ISP_Tuning_SetSensorFPS(fps_num, fps_den);
+        if (res == 0) {
+            response = "ok";
+        }
+    } else {
+        return "Invalid parameters";
+    }
+
+    return response;
+}
+
+static char *BacklightComp(char *tokenPtr) {
+    char *response = "error";
+    char *p;
+    uint32_t strength = 0;
+    int parsedFields = 0;
+
+    // Parse parameter from the input string
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    if (p != NULL) {
+        strength = (uint32_t)atoi(p);
+        parsedFields++;
+    }
+
+    // Get current backlight compensation strength if no parameter is provided
+    if (parsedFields == 0) {
+        int res = IMP_ISP_Tuning_GetBacklightComp(&strength);
+        if (res == 0) {
+            static char buffer[32];
+            sprintf(buffer, "Current Backlight Strength: %u", strength);
+            return buffer;
+        }
+    }
+    // Set new backlight compensation strength if a parameter is provided
+    else if (parsedFields == 1) {
+        int res = IMP_ISP_Tuning_SetBacklightComp(strength);
+        if (res == 0) {
+            response = "ok";
+        }
+    } else {
+        return "Invalid parameters";
+    }
+
+    return response;
+}
+
+
 /////////////////
 // begin commands
 struct CommandTableSt {
@@ -639,38 +917,46 @@ struct CommandTableSt {
   char * (*func)(char *);
 };
 
-static struct CommandTableSt VideoCommandTable[] = {
-  { "flip",      &Flip }, // flip [normal/flip/mirror/flip_mirror]
-  { "cont",      &Contrast }, // cont 0 - 255(center:128)
-  { "bri",       &Brightness }, // bri 0 - 255(center:128)
-  { "sat",       &Saturation }, // sat 0 - 255(center:128)
-  { "sharp",     &Sharpness }, // sharp 0 - 255(center:128)
-  { "sinter",    &Sinter }, // sinter 0 - 255(center:128)
-  { "temper",    &Temper }, // temper 0 - 255(center:128)
+static struct CommandTableSt imp_ControlTable[] = {
+  { "aihpf",      &HighPassFilter }, // on/off
+  { "aiagc",      &AutoGainControl }, // gainLevel:0-31(dB) maxGain:0-90(dB)
+  { "ains",       &NoiseSuppression }, // off/0 - 3
+  { "aiaec",      &EchoCancellation }, // on/off
+  { "aivol",      &Volume }, // -30 - 120
+  { "aigain",     &Gain }, // 0 - 31
+  { "aialc",      &AlcGain }, // 0 - 7
+  { "aovol",      &aoVolume }, // -30 - 120
+  { "aogain",     &aoGain }, // 0 - 31
+  { "flip",      &Flip }, // normal/flip/mirror/flip_mirror
+  { "contrast",      &Contrast }, // cont 0 - 255 (center:128)
+  { "brightness",       &Brightness }, // 0 - 255 (center:128)
+  { "saturation",       &Saturation }, // 0 - 255 (center:128)
+  { "sharpness",     &Sharpness }, // sharp 0 - 255 (center:128)
+  { "sinter",    &Sinter }, // sinter 0 - 255 (center:128)
+  { "temper",    &Temper }, // temper 0 - 255 (center:128)
   { "aecomp",    &AEComp }, // aecomp 0 - 255
-  { "aeitmax",   &AEItMax }, // aeitmax 0-
-  { "dpc",       &DPC }, // dpc 0 - 255
-  { "drc",       &DRC }, // drc 0 - 255
-  { "hilight",   &HiLight }, // hilight 0 - 10
-  { "again",     &AGain }, // again 0 -
-  { "dgain",     &DGain }, // dgain 0 -
-  { "hue",     &Hue }, // hue 0 - 255(center:128)
+  { "aeitmax",   &AEItMax }, // aeitmax 0 -
+  { "dpc",       &DPC }, // 0 - 255
+  { "drc",       &DRC }, // 0 - 255
+  { "hilight",   &HiLight }, // 0 - 10
+  { "again",     &AGain }, //  0 = 1x, 32 = 2x gain, etc
+  { "dgain",     &DGain }, // 0 = 1x, 32 = 2x gain, etc
+  { "hue",     &Hue }, // hue 0 - 255 (center:128)
   { "ispmode",     &Mode }, // 0, 1 
   { "flicker",     &Flicker }, // 0, 1, 2
-  { "gamma",     &Gamma }, // not functional
-  { "autozoom",  &SetAutoZoom }, // not functional
-  { "fcrop",  &FrontCrop }, // See example above
-  { "mask",  &Mask }, // See example above
-  { "wb",  &WhiteBalance }, // See example above
+  { "gamma",     &Gamma }, // GET only
+  { "autozoom",  &SetAutoZoom }, // GET only
+  { "frontcrop",  &FrontCrop }, // See example in function
+  { "mask",  &Mask }, // See example in function
+  { "whitebalance",  &WhiteBalance }, // <mode 0-9> [rgain] [bgain]
+  { "fps",  &SensorFPS }, // <fps_num> <fps_den>
+  { "backlightcomp",  &BacklightComp }, // strength 0-10 
 };
-
 
 /*
 
 todo:
-
-IMP_ISP_Tuning_SetSensorFPS(uint32_t fps_num, uint32_t fps_den);
-
+DPS // t20 only
 IMP_ISP_Tuning_SetISPBypass(IMPISPTuningOpsMode enable);
 
 IMP_ISP_Tuning_SetISPCustomMode(IMPISPTuningOpsMode mode);
@@ -704,12 +990,12 @@ IMP_ISP_Tuning_SetWdr_OutputMode(IMPISPWdrOutputMode *mode);
 
 */
 
-char *VideoTune(int fd, char *tokenPtr) {
+char *IMPTune(int fd, char *tokenPtr) {
 
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(p) {
-    for(int i = 0; i < sizeof(VideoCommandTable) / sizeof(struct CommandTableSt); i++) {
-      if(!strcmp(p, VideoCommandTable[i].cmd)) return (*VideoCommandTable[i].func)(tokenPtr);
+    for(int i = 0; i < sizeof(imp_ControlTable) / sizeof(struct CommandTableSt); i++) {
+      if(!strcmp(p, imp_ControlTable[i].cmd)) return (*imp_ControlTable[i].func)(tokenPtr);
     }
   }
 
