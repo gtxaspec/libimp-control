@@ -2,6 +2,7 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -96,6 +97,91 @@ typedef struct {
 } IMPISPGamma;
 
 extern int IMP_ISP_Tuning_GetGamma(IMPISPGamma *gamma);
+
+typedef struct {
+    int chan;
+    int scaler_enable;
+    int scaler_outwidth;
+    int scaler_outheight;
+    int crop_enable;
+    int crop_left;
+    int crop_top;
+    int crop_width;
+    int crop_height;
+} IMPISPAutoZoom;
+
+extern int IMP_ISP_Tuning_SetAutoZoom(IMPISPAutoZoom *ispautozoom);
+
+typedef struct {
+        bool fcrop_enable;
+        unsigned int fcrop_top;
+        unsigned int fcrop_left;
+        unsigned int fcrop_width;
+        unsigned int fcrop_height;
+} IMPISPFrontCrop;
+
+extern int IMP_ISP_Tuning_SetFrontCrop(IMPISPFrontCrop *ispfrontcrop);
+extern int IMP_ISP_Tuning_GetFrontCrop(IMPISPFrontCrop *ispfrontcrop);
+
+
+typedef enum {
+        IMPISP_MASK_TYPE_RGB = 0,
+        IMPISP_MASK_TYPE_YUV = 1,
+} IMPISP_MASK_TYPE;
+
+typedef union mask_value {
+        struct {
+                unsigned char Red;
+                unsigned char Green;
+                unsigned char Blue;
+        } mask_rgb;
+        struct {
+                unsigned char y_value;
+                unsigned char u_value;
+                unsigned char v_value;
+        } mask_ayuv;
+} IMP_ISP_MASK_VALUE;
+
+typedef struct isp_mask_block_par {
+        unsigned char mask_en;
+        unsigned short mask_pos_top;
+        unsigned short mask_pos_left;
+        unsigned short mask_width;
+        unsigned short mask_height;
+        IMP_ISP_MASK_VALUE mask_value;
+} IMPISP_MASK_BLOCK_PAR;
+
+typedef struct {
+        IMPISP_MASK_BLOCK_PAR chn0[4];
+        IMPISP_MASK_BLOCK_PAR chn1[4];
+        IMPISP_MASK_BLOCK_PAR chn2[4];
+        IMPISP_MASK_TYPE mask_type;
+} IMPISPMASKAttr;
+
+extern int IMP_ISP_Tuning_SetMask(IMPISPMASKAttr *mask);
+extern int IMP_ISP_Tuning_GetMask(IMPISPMASKAttr *mask);
+
+typedef enum isp_core_wb_mode {
+        ISP_CORE_WB_MODE_AUTO = 0,
+        ISP_CORE_WB_MODE_MANUAL = 1,
+        ISP_CORE_WB_MODE_DAY_LIGHT = 2,
+        ISP_CORE_WB_MODE_CLOUDY = 3,
+        ISP_CORE_WB_MODE_INCANDESCENT = 4,
+        ISP_CORE_WB_MODE_FLOURESCENT = 5,
+        ISP_CORE_WB_MODE_TWILIGHT = 6,
+        ISP_CORE_WB_MODE_SHADE = 7,
+        ISP_CORE_WB_MODE_WARM_FLOURESCENT = 8,
+        ISP_CORE_WB_MODE_CUSTOM = 9,
+} isp_core_wb_mode;
+
+typedef struct isp_core_wb_attr{
+        enum isp_core_wb_mode mode;
+        uint16_t rgain;
+        uint16_t bgain;
+}IMPISPWB;
+
+extern int IMP_ISP_Tuning_SetWB(IMPISPWB *wb);
+extern int IMP_ISP_Tuning_GetWB(IMPISPWB *wb);
 
 
 ///begin
@@ -310,9 +396,9 @@ static char *Mode(char *tokenPtr) {
 
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
-    IMPISPRunningMode mode;
-    IMP_ISP_Tuning_GetISPRunningMode(&mode);
-    sprintf(videoResBuf, "%d", mode);
+    IMPISPRunningMode ispmode;
+    IMP_ISP_Tuning_GetISPRunningMode(&ispmode);
+    sprintf(videoResBuf, "%d", ispmode);
     return videoResBuf;
   }
   int res = IMP_ISP_Tuning_SetISPRunningMode(atoi(p));
@@ -332,6 +418,7 @@ static char *Flicker(char *tokenPtr) {
   return res ? "error": "ok";
 }
 
+// This one needs work...
 static char *Gamma(char *tokenPtr) {
     char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
     if (!p) {
@@ -350,7 +437,202 @@ static char *Gamma(char *tokenPtr) {
     }
 }
 
+// Doesn't work, or, I don't know how it works... lol
+static char *SetAutoZoom(char *tokenPtr) {
+    IMPISPAutoZoom zoomParams;
+    char *response = "error"; // Default response is error
+    char *p;
+    int parsedFields = 0;
 
+    // Parse each parameter from the input string
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    while(p != NULL && parsedFields < 8) {
+        switch (parsedFields) {
+            case 0: zoomParams.chan = atoi(p); break;
+            case 1: zoomParams.scaler_enable = atoi(p); break;
+            case 2: zoomParams.scaler_outwidth = atoi(p); break;
+            case 3: zoomParams.scaler_outheight = atoi(p); break;
+            case 4: zoomParams.crop_enable = atoi(p); break;
+            case 5: zoomParams.crop_left = atoi(p); break;
+            case 6: zoomParams.crop_top = atoi(p); break;
+            case 7: zoomParams.crop_width = atoi(p); break;
+            case 8: zoomParams.crop_height = atoi(p); break;
+        }
+        p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+        parsedFields++;
+    }
+
+    // Check if all parameters were provided
+    if (parsedFields == 8) {
+        int res = IMP_ISP_Tuning_SetAutoZoom(&zoomParams);
+        if (res == 0) {
+            response = "ok";
+        }
+    }
+
+    return response;
+}
+
+// example : fcrop 1 180 320 1280 720
+// fcrop <enable> <top> <left> <width> <height>
+static char *FrontCrop(char *tokenPtr) {
+    IMPISPFrontCrop frontCropParams;
+    char *response = "error"; // Default response is error
+    char *p;
+    int parsedFields = 0;
+
+    // Parse each parameter from the input string
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    while (p != NULL) {
+        switch (parsedFields) {
+            case 0: frontCropParams.fcrop_enable = atoi(p) != 0; break;
+            case 1: frontCropParams.fcrop_top = (unsigned int)atoi(p); break;
+            case 2: frontCropParams.fcrop_left = (unsigned int)atoi(p); break;
+            case 3: frontCropParams.fcrop_width = (unsigned int)atoi(p); break;
+            case 4: frontCropParams.fcrop_height = (unsigned int)atoi(p); break;
+            default: break;
+        }
+        p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+        parsedFields++;
+    }
+
+    // Get current front crop settings if no arguments are provided
+    if (parsedFields == 0) {
+        int res = IMP_ISP_Tuning_GetFrontCrop(&frontCropParams);
+        if (res == 0) {
+            static char buffer[128];
+            sprintf(buffer, "Enable: %d, Top: %u, Left: %u, Width: %u, Height: %u",
+                    frontCropParams.fcrop_enable,
+                    frontCropParams.fcrop_top,
+                    frontCropParams.fcrop_left,
+                    frontCropParams.fcrop_width,
+                    frontCropParams.fcrop_height);
+            return buffer;
+        }
+    }
+    // Set new front crop settings if arguments are provided
+    else if (parsedFields == 5) {
+        int res = IMP_ISP_Tuning_SetFrontCrop(&frontCropParams);
+        if (res == 0) {
+            response = "ok";
+        }
+    }
+
+    return response;
+}
+
+
+// example: video mask 0 1 100 100 400 400 100 100 100
+// mask <channel> <mask_en> <mask_pos_top> <mask_pos_left> <mask_width> <mask_height> <Red> <Green> <Blue>
+static char *Mask(char *tokenPtr) {
+    IMPISPMASKAttr maskAttr;
+    char *response = "error";
+    char *p;
+    int parsedFields = 0;
+    unsigned int channel = 0; // default channel
+
+    // Parse the channel first
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    if (p != NULL) {
+        channel = atoi(p);
+        if (channel >= 4) { // Assuming only 4 channels (0-3)
+            return "Invalid channel";
+        }
+    } else {
+        return "Channel not specified";
+    }
+
+    // Parse mask parameters
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    while (p != NULL) {
+        switch (parsedFields) {
+            case 0: maskAttr.chn0[channel].mask_en = atoi(p); break;
+            case 1: maskAttr.chn0[channel].mask_pos_top = (unsigned short)atoi(p); break;
+            case 2: maskAttr.chn0[channel].mask_pos_left = (unsigned short)atoi(p); break;
+            case 3: maskAttr.chn0[channel].mask_width = (unsigned short)atoi(p); break;
+            case 4: maskAttr.chn0[channel].mask_height = (unsigned short)atoi(p); break;
+            case 5: maskAttr.chn0[channel].mask_value.mask_rgb.Red = (unsigned char)atoi(p); break;
+            case 6: maskAttr.chn0[channel].mask_value.mask_rgb.Green = (unsigned char)atoi(p); break;
+            case 7: maskAttr.chn0[channel].mask_value.mask_rgb.Blue = (unsigned char)atoi(p); break;
+            // Add more cases if you want to handle YUV type as well
+            default: break;
+        }
+        p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+        parsedFields++;
+    }
+
+    // If no parameters after channel, get mask settings
+    if (parsedFields == 0) {
+        int res = IMP_ISP_Tuning_GetMask(&maskAttr);
+        if (res == 0) {
+            static char buffer[256];
+            // Assuming we are formatting for channel 0 RGB type for simplicity
+            sprintf(buffer, "Enable: %d, Top: %u, Left: %u, Width: %u, Height: %u, R: %u, G: %u, B: %u",
+                    maskAttr.chn0[channel].mask_en,
+                    maskAttr.chn0[channel].mask_pos_top,
+                    maskAttr.chn0[channel].mask_pos_left,
+                    maskAttr.chn0[channel].mask_width,
+                    maskAttr.chn0[channel].mask_height,
+                    maskAttr.chn0[channel].mask_value.mask_rgb.Red,
+                    maskAttr.chn0[channel].mask_value.mask_rgb.Green,
+                    maskAttr.chn0[channel].mask_value.mask_rgb.Blue);
+            return buffer;
+        }
+    }
+    // Set new mask settings if parameters are provided
+    else if (parsedFields >= 5) { // Assuming at least 5 parameters for setting the mask
+        int res = IMP_ISP_Tuning_SetMask(&maskAttr);
+        if (res == 0) {
+            response = "ok";
+        }
+    }
+
+    return response;
+}
+
+
+// wb <mode> [rgain] [bgain]
+// I think rgain and bagin has to be on manual mode...
+static char *WhiteBalance(char *tokenPtr) {
+    IMPISPWB wb;
+    char *response = "error";
+    char *p;
+    int parsedFields = 0;
+
+    // Parse parameters from the input string
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    while (p != NULL) {
+        switch (parsedFields) {
+            case 0: wb.mode = (isp_core_wb_mode)atoi(p); break;
+            case 1: wb.rgain = (uint16_t)atoi(p); break;
+            case 2: wb.bgain = (uint16_t)atoi(p); break;
+            default: break;
+        }
+        p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+        parsedFields++;
+    }
+
+    // Get current WB settings if no parameters are provided
+    if (parsedFields == 0) {
+        int res = IMP_ISP_Tuning_GetWB(&wb);
+        if (res == 0) {
+            static char buffer[128];
+            sprintf(buffer, "Mode: %d, Rgain: %u, Bgain: %u", wb.mode, wb.rgain, wb.bgain);
+            return buffer;
+        }
+    }
+    // Set new WB settings if parameters are provided
+    else if (parsedFields >= 1) { // At least mode is required
+        int res = IMP_ISP_Tuning_SetWB(&wb);
+        if (res == 0) {
+            response = "ok";
+        }
+    }
+
+    return response;
+}
+
+/////////////////
 // begin commands
 struct CommandTableSt {
   const char *cmd;
@@ -372,33 +654,35 @@ static struct CommandTableSt VideoCommandTable[] = {
   { "hilight",   &HiLight }, // hilight 0 - 10
   { "again",     &AGain }, // again 0 -
   { "dgain",     &DGain }, // dgain 0 -
-  { "hue",     &Hue }, // hue
-  { "mode",     &Mode }, // hue
-  { "flicker",     &Flicker }, // hue
-  { "gamma",     &Gamma }, // hue
+  { "hue",     &Hue }, // hue 0 - 255(center:128)
+  { "ispmode",     &Mode }, // 0, 1 
+  { "flicker",     &Flicker }, // 0, 1, 2
+  { "gamma",     &Gamma }, // not functional
+  { "autozoom",  &SetAutoZoom }, // not functional
+  { "fcrop",  &FrontCrop }, // See example above
+  { "mask",  &Mask }, // See example above
+  { "wb",  &WhiteBalance }, // See example above
 };
 
 
 /*
 
-support:
-IMP_ISP_Tuning_SetAutoZoom(IMPISPAutoZoom *ispautozoom);
+todo:
+
 IMP_ISP_Tuning_SetSensorFPS(uint32_t fps_num, uint32_t fps_den);
+
 IMP_ISP_Tuning_SetISPBypass(IMPISPTuningOpsMode enable);
-IMP_ISP_Tuning_SetISPRunningMode(mode);
-IMP_ISP_Tuning_SetISPRunningMode error !\n");
-IMP_ISP_Tuning_SetISPRunningMode(IMPISPRunningMode mode);
+
 IMP_ISP_Tuning_SetISPCustomMode(IMPISPTuningOpsMode mode);
+
+IMP_ISP_Tuning_SetWB_ALGO(IMPISPAWBAlgo wb_algo);
 IMP_ISP_Tuning_SetAeFreeze(IMPISPTuningOpsMode mode);
 IMP_ISP_Tuning_SetExpr(IMPISPExpr *expr);
-IMP_ISP_Tuning_SetWB(IMPISPWB *wb);
 IMP_ISP_Tuning_SetAwbClust(IMPISPAWBCluster *awb_cluster);
 IMP_ISP_Tuning_SetAwbCtTrend(IMPISPAWBCtTrend *ct_trend);
-IMP_ISP_Tuning_SetVideoDrop(void (*cb)(void));
 IMP_ISP_Tuning_SetBacklightComp(uint32_t strength);
 IMP_ISP_Tuning_SetAeWeight(IMPISPWeight *ae_weight);
 IMP_ISP_Tuning_SetAwbWeight(IMPISPWeight *awb_weight);
-IMP_ISP_Tuning_SetWB_ALGO(IMPISPAWBAlgo wb_algo);
 IMP_ISP_Tuning_SetAeHist(IMPISPAEHist *ae_hist);
 IMP_ISP_Tuning_SetAwbHist(IMPISPAWBHist *awb_hist);
 IMP_ISP_Tuning_SetAfHist(IMPISPAFHist *af_hist);
@@ -407,8 +691,6 @@ IMP_ISP_Tuning_SetAeMin(IMPISPAEMin *ae_min);
 IMP_ISP_Tuning_SetAe_IT_MAX(unsigned int it_max);
 IMP_ISP_Tuning_SetAeTargetList(IMPISPAETargetList *at_list);
 IMP_ISP_Tuning_SetModuleControl(IMPISPModuleCtl *ispmodule);
-IMP_ISP_Tuning_SetFrontCrop(IMPISPFrontCrop *ispfrontcrop);
-IMP_ISP_Tuning_SetMask(IMPISPMASKAttr *mask);
 IMP_ISP_Tuning_SetAwbCt(unsigned int *ct);
 IMP_ISP_Tuning_SetCCMAttr(IMPISPCCMAttr *ccm);
 IMP_ISP_Tuning_SetAeAttr(IMPISPAEAttr *ae);
