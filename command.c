@@ -1,15 +1,17 @@
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <errno.h>
+#include <unistd.h>
+#include "version.h"
 
 // Constants
 static const unsigned short CommandPort = 4000;
@@ -196,8 +198,24 @@ static void *CommandThread(void *arg) {
     return NULL;
 }
 
+void sigint_handler(int signum) {
+    printf("Caught SIGINT (signal number %d). Cleaning up...\n", signum);
+    raise(SIGINT);
+    exit(0);
+}
+
 // Initialization function
 static void __attribute ((constructor)) command_init(void) {
+    // Code to be executed when the library is loaded
+    printf("Library loaded, initializing...\n");
+    printf("\nLIBIMP_CONTROL Version: %s\n", VERSION);
+
+    signal(SIGINT, sigint_handler);
+    if (signal(SIGINT, sigint_handler) == SIG_ERR) {
+        printf("Error setting up signal handler\n");
+    }
+
+
     if (pipe(SelfPipe) != 0) {
         fprintf(stderr, "pipe creation error\n");
         return;
@@ -217,4 +235,10 @@ static void __attribute ((constructor)) command_init(void) {
 
     // Detach the thread to free resources when it's finished
     pthread_detach(thread);
+}
+
+__attribute__((destructor))
+void libimp_finalizer(void) {
+    // Code to be executed when the library is unloaded or program exits
+    printf("Library is being unloaded...\n");
 }

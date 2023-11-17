@@ -1,16 +1,13 @@
 #define _GNU_SOURCE
 #include <dlfcn.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <unistd.h>
 #include <stdint.h>
-#include <fcntl.h>
 #include <sys/ioctl.h>
-#include <pthread.h>
-#include "version.h"
-#include <signal.h>
+#include <unistd.h>
 
 ///////////
 // Audio //
@@ -1023,31 +1020,4 @@ char *IMPTune(int fd, char *tokenPtr) {
     p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   }
   return "error";
-}
-
-
-typedef void (*sighandler_t)(int);
-static sighandler_t original_sigint_handler = NULL;
-
-void custom_sigint_handler(int signum) {
-    // Call the original SIGINT handler
-    if (original_sigint_handler) {
-        original_sigint_handler(signum);
-    }
-}
-
-__attribute__((constructor))
-void libimp_initializer(void) {
-    // Code to be executed when the library is loaded
-    printf("Library loaded, initializing...\n");
-    printf("\nLIBIMP_CONTROL Version: %s\n", VERSION);
-    // Save the original SIGINT handler and set the custom one
-    original_sigint_handler = signal(SIGINT, custom_sigint_handler);
-
-}
-
-__attribute__((destructor))
-void libimp_finalizer(void) {
-    // Code to be executed when the library is unloaded or program exits
-    printf("Library is being unloaded...\n");
 }

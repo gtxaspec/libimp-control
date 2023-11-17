@@ -1,5 +1,7 @@
 # Makefile for libimp_control.so
 
+#CROSS_COMPILE=mipsel-openipc-linux-musl-
+
 # Compiler settings
 CC := $(CROSS_COMPILE)gcc
 CFLAGS := -fPIC -std=gnu99 -shared -ldl -lm -pthread
