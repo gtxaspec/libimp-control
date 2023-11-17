@@ -653,7 +653,7 @@ static char *Gamma(char *tokenPtr) {
     }
 }
 
-// Doesn't work, or, I don't know how it works... lol
+// Example: autozoom 0 1 1920 1080 1 800 200 640 480
 static char *SetAutoZoom(char *tokenPtr) {
     IMPISPAutoZoom zoomParams;
     char *response = "error"; // Default response is error
@@ -662,7 +662,7 @@ static char *SetAutoZoom(char *tokenPtr) {
 
     // Parse each parameter from the input string
     p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-    while(p != NULL && parsedFields < 8) {
+    while(p != NULL && parsedFields < 9) {
         switch (parsedFields) {
             case 0: zoomParams.chan = atoi(p); break;
             case 1: zoomParams.scaler_enable = atoi(p); break;
@@ -679,7 +679,7 @@ static char *SetAutoZoom(char *tokenPtr) {
     }
 
     // Check if all parameters were provided
-    if (parsedFields == 8) {
+    if (parsedFields == 9) {
         int res = IMP_ISP_Tuning_SetAutoZoom(&zoomParams);
         if (res == 0) {
             response = "ok";
@@ -957,15 +957,15 @@ static struct CommandTableSt imp_ControlTable[] = {
   { "again",     &AGain }, //  0 = 1x, 32 = 2x gain, etc
   { "dgain",     &DGain }, // 0 = 1x, 32 = 2x gain, etc
   { "hue",     &Hue }, // hue 0 - 255 (center:128)
-  { "ispmode",     &Mode }, // 0, 1 
+  { "ispmode",     &Mode }, // 0, 1
   { "flicker",     &Flicker }, // 0, 1, 2
   { "gamma",     &Gamma }, // GET only
-  { "autozoom",  &SetAutoZoom }, // GET only
+  { "autozoom",  &SetAutoZoom }, // See example in function
   { "frontcrop",  &FrontCrop }, // See example in function
   { "mask",  &Mask }, // See example in function
   { "whitebalance",  &WhiteBalance }, // <mode 0-9> [rgain] [bgain]
   { "fps",  &SensorFPS }, // <fps_num> <fps_den>
-  { "backlightcomp",  &BacklightComp }, // strength 0-10 
+  { "backlightcomp",  &BacklightComp }, // strength 0-10
 };
 
 /*
