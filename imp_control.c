@@ -25,6 +25,12 @@ typedef struct {
   int chnCnt;  // Number of channels supported.
 } IMPAudioIOAttr;
 
+#ifndef PLATFORM_T20
+// ALC gain value. 0 - 7
+extern int IMP_AI_SetAlcGain(int audioDevId, int aiChn, int aiPgaGain);
+extern int IMP_AI_GetAlcGain(int audioDevId, int aiChn, int *aiPgaGain);
+#endif
+
 // Attribute of the audio input device.
 extern int IMP_AI_SetPubAttr(int audioDevId, IMPAudioIOAttr *attr);
 extern int IMP_AI_GetPubAttr(int audioDevId, IMPAudioIOAttr *attr);
@@ -53,10 +59,6 @@ extern int IMP_AI_GetVol(int audioDevId, int aiChn, int *vol);
 extern int IMP_AI_SetGain(int audioDevId, int aiChn, int aiGain);
 extern int IMP_AI_GetGain(int audioDevId, int aiChn, int *aiGain);
 
-// ALC gain value. 0 - 7
-extern int IMP_AI_SetAlcGain(int audioDevId, int aiChn, int aiPgaGain);
-extern int IMP_AI_GetAlcGain(int audioDevId, int aiChn, int *aiPgaGain);
-
 // Audio output volume. -30 - 120, default: 60
 extern int IMP_AO_SetVol(int audioDevId, int aoChn, int aoVol);
 extern int IMP_AO_GetVol(int audioDevId, int aoChn, int *vol);
@@ -69,27 +71,8 @@ extern int IMP_AO_GetGain(int audioDevId, int aoChn, int *aoGain);
 // Video begin //
 /////////////////
 
-// Contrast
-extern int IMP_ISP_Tuning_SetContrast(unsigned char contrast);
-extern int IMP_ISP_Tuning_GetContrast(unsigned char *pcontrast);
-
-// Brightness
-extern int IMP_ISP_Tuning_SetBrightness(unsigned char bright);
-extern int IMP_ISP_Tuning_GetBrightness(unsigned char *pbright);
-
-// Saturation
-extern int IMP_ISP_Tuning_SetSaturation(unsigned char sat);
-extern int IMP_ISP_Tuning_GetSaturation(unsigned char *psat);
-
-// Sharpness
-extern int IMP_ISP_Tuning_SetSharpness(unsigned char sharpness);
-extern int IMP_ISP_Tuning_GetSharpness(unsigned char *psharpness);
-
-// AE compensation.
-// AE compensation parameters can adjust the target of the image AE.
-extern int IMP_ISP_Tuning_SetAeComp(int comp);
-extern int IMP_ISP_Tuning_GetAeComp(int *comp);
-
+// These functions do not exist on <T31
+#ifndef PLATFORM_T20
 // AE Max parameters.
 extern int IMP_ISP_Tuning_SetAe_IT_MAX(unsigned int it_max);
 extern int IMP_ISP_Tuning_GetAE_IT_MAX(unsigned int *it_max);
@@ -102,61 +85,9 @@ extern int IMP_ISP_Tuning_GetDPC_Strength(unsigned int *ratio);
 extern int IMP_ISP_Tuning_SetDRC_Strength(unsigned int ratio);
 extern int IMP_ISP_Tuning_GetDRC_Strength(unsigned int *ratio);
 
-// Highlight intensity controls.
-extern int IMP_ISP_Tuning_SetHiLightDepress(uint32_t strength);
-extern int IMP_ISP_Tuning_GetHiLightDepress(uint32_t *strength);
-
-// Set 3D noise reduction intensity.
-extern int IMP_ISP_Tuning_SetTemperStrength(uint32_t ratio);
-
-// Set 2D noise reduction intensity.
-extern int IMP_ISP_Tuning_SetSinterStrength(uint32_t ratio);
-
-// Max value of sensor analog gain.
-extern int IMP_ISP_Tuning_SetMaxAgain(uint32_t gain);
-extern int IMP_ISP_Tuning_GetMaxAgain(uint32_t *gain);
-
-// Max value of sensor Digital gain.
-extern int IMP_ISP_Tuning_SetMaxDgain(uint32_t gain);
-extern int IMP_ISP_Tuning_GetMaxDgain(uint32_t *gain);
-
-// ISP image mirror(horizontal) effect function (enable/disable)
-extern int IMP_ISP_Tuning_SetISPHflip(int mode);
-extern int IMP_ISP_Tuning_GetISPHflip(int *pmode);
-
-// ISP image mirror(vertical) effect function (enable/disable)
-extern int IMP_ISP_Tuning_SetISPVflip(int mode);
-extern int IMP_ISP_Tuning_GetISPVflip(int *pmode);
-
 // Hue
 extern int IMP_ISP_Tuning_SetBcshHue(unsigned char hue);
 extern int IMP_ISP_Tuning_GetBcshHue(unsigned char *hue);
-
-// ISP Day / Night mode
-typedef enum {
-        IMPISP_RUNNING_MODE_DAY = 0,
-        IMPISP_RUNNING_MODE_NIGHT = 1,
-} IMPISPRunningMode;
-
-extern int IMP_ISP_Tuning_SetISPRunningMode(IMPISPRunningMode mode);
-extern int IMP_ISP_Tuning_GetISPRunningMode(IMPISPRunningMode *pmode);
-
-// ISP Anti-Flicker effect
-typedef enum {
-        IMPISP_ANTIFLICKER_DISABLE = 0,
-        IMPISP_ANTIFLICKER_50HZ = 1,
-        IMPISP_ANTIFLICKER_60HZ = 2,
-} IMPISPAntiflickerAttr;
-
-extern int IMP_ISP_Tuning_SetAntiFlickerAttr(IMPISPAntiflickerAttr attr);
-extern int IMP_ISP_Tuning_GetAntiFlickerAttr(IMPISPAntiflickerAttr *pattr);
-
-// ISP Gamma
-typedef struct {
-        uint16_t gamma[129];
-} IMPISPGamma;
-
-extern int IMP_ISP_Tuning_GetGamma(IMPISPGamma *gamma);
 
 // ISP AutoZoom
 typedef struct {
@@ -171,9 +102,9 @@ typedef struct {
     int crop_height;
 } IMPISPAutoZoom;
 
-// ISP Front Crop
 extern int IMP_ISP_Tuning_SetAutoZoom(IMPISPAutoZoom *ispautozoom);
 
+// ISP Front Crop
 typedef struct {
         bool fcrop_enable;
         unsigned int fcrop_top;
@@ -223,6 +154,83 @@ typedef struct {
 extern int IMP_ISP_Tuning_SetMask(IMPISPMASKAttr *mask);
 extern int IMP_ISP_Tuning_GetMask(IMPISPMASKAttr *mask);
 
+// ISP Backlight Compensation
+extern int IMP_ISP_Tuning_SetBacklightComp(uint32_t strength);
+extern int IMP_ISP_Tuning_GetBacklightComp(uint32_t *strength);
+#endif
+
+// Contrast
+extern int IMP_ISP_Tuning_SetContrast(unsigned char contrast);
+extern int IMP_ISP_Tuning_GetContrast(unsigned char *pcontrast);
+
+// Brightness
+extern int IMP_ISP_Tuning_SetBrightness(unsigned char bright);
+extern int IMP_ISP_Tuning_GetBrightness(unsigned char *pbright);
+
+// Saturation
+extern int IMP_ISP_Tuning_SetSaturation(unsigned char sat);
+extern int IMP_ISP_Tuning_GetSaturation(unsigned char *psat);
+
+// Sharpness
+extern int IMP_ISP_Tuning_SetSharpness(unsigned char sharpness);
+extern int IMP_ISP_Tuning_GetSharpness(unsigned char *psharpness);
+
+// AE compensation: parameters can adjust the target of the image AE.
+extern int IMP_ISP_Tuning_SetAeComp(int comp);
+extern int IMP_ISP_Tuning_GetAeComp(int *comp);
+
+// Highlight intensity controls.
+extern int IMP_ISP_Tuning_SetHiLightDepress(uint32_t strength);
+extern int IMP_ISP_Tuning_GetHiLightDepress(uint32_t *strength);
+
+// Set 3D noise reduction intensity.
+extern int IMP_ISP_Tuning_SetTemperStrength(uint32_t ratio);
+
+// Set 2D noise reduction intensity.
+extern int IMP_ISP_Tuning_SetSinterStrength(uint32_t ratio);
+
+// Max value of sensor analog gain.
+extern int IMP_ISP_Tuning_SetMaxAgain(uint32_t gain);
+extern int IMP_ISP_Tuning_GetMaxAgain(uint32_t *gain);
+
+// Max value of sensor Digital gain.
+extern int IMP_ISP_Tuning_SetMaxDgain(uint32_t gain);
+extern int IMP_ISP_Tuning_GetMaxDgain(uint32_t *gain);
+
+// ISP image mirror(horizontal) effect function (enable/disable)
+extern int IMP_ISP_Tuning_SetISPHflip(int mode);
+extern int IMP_ISP_Tuning_GetISPHflip(int *pmode);
+
+// ISP image mirror(vertical) effect function (enable/disable)
+extern int IMP_ISP_Tuning_SetISPVflip(int mode);
+extern int IMP_ISP_Tuning_GetISPVflip(int *pmode);
+
+// ISP Day / Night mode
+typedef enum {
+        IMPISP_RUNNING_MODE_DAY = 0,
+        IMPISP_RUNNING_MODE_NIGHT = 1,
+} IMPISPRunningMode;
+
+extern int IMP_ISP_Tuning_SetISPRunningMode(IMPISPRunningMode mode);
+extern int IMP_ISP_Tuning_GetISPRunningMode(IMPISPRunningMode *pmode);
+
+// ISP Anti-Flicker effect
+typedef enum {
+        IMPISP_ANTIFLICKER_DISABLE = 0,
+        IMPISP_ANTIFLICKER_50HZ = 1,
+        IMPISP_ANTIFLICKER_60HZ = 2,
+} IMPISPAntiflickerAttr;
+
+extern int IMP_ISP_Tuning_SetAntiFlickerAttr(IMPISPAntiflickerAttr attr);
+extern int IMP_ISP_Tuning_GetAntiFlickerAttr(IMPISPAntiflickerAttr *pattr);
+
+// ISP Gamma
+typedef struct {
+        uint16_t gamma[129];
+} IMPISPGamma;
+
+extern int IMP_ISP_Tuning_GetGamma(IMPISPGamma *gamma);
+
 // ISP White Balance
 typedef enum isp_core_wb_mode {
         ISP_CORE_WB_MODE_AUTO = 0,
@@ -250,14 +258,11 @@ extern int IMP_ISP_Tuning_GetWB(IMPISPWB *wb);
 extern int IMP_ISP_Tuning_SetSensorFPS(uint32_t fps_num, uint32_t fps_den);
 extern int IMP_ISP_Tuning_GetSensorFPS(uint32_t *fps_num, uint32_t *fps_den);
 
-// ISP Backlight Compensation
-extern int IMP_ISP_Tuning_SetBacklightComp(uint32_t strength);
-extern int IMP_ISP_Tuning_GetBacklightComp(uint32_t *strength);
+/////////////////
+// Begin AUDIO //
+/////////////////
 
-//////////////
-// Begin AI //
-//////////////
-
+// AI
 static char audioResBuf[256];
 
 static char *HighPassFilter(char *tokenPtr) {
@@ -398,7 +403,7 @@ static char *aoGain(char *tokenPtr) {
 }
 
 /////////////////
-// Begin video //
+// Begin Video //
 /////////////////
 
 static char videoResBuf[1024];
@@ -593,8 +598,6 @@ static char *DGain(char *tokenPtr) {
   return res ? "error": "ok";
 }
 
-// New
-
 static char *Hue(char *tokenPtr) {
 
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
@@ -634,7 +637,7 @@ static char *Flicker(char *tokenPtr) {
   return res ? "error": "ok";
 }
 
-// This one needs work...
+// This one needs work to set...
 static char *Gamma(char *tokenPtr) {
     char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
     if (!p) {
@@ -969,7 +972,6 @@ static struct CommandTableSt imp_ControlTable[] = {
 };
 
 /*
-
 todo:
 DPS // T20 only
 // Get all T20/T40/T41 specific functions too
@@ -984,7 +986,6 @@ int IMP_ISP_Tuning_GetISPRunningMode(IMPISPRunningMode *pmode)
 int IMP_ISP_Tuning_SetISPCustomMode(IMPISPTuningOpsMode mode)
 int IMP_ISP_Tuning_GetISPCustomMode(IMPISPTuningOpsMode mode)
 int IMP_ISP_Tuning_SetGamma(IMPISPGamma *gamma)
-int IMP_ISP_Tuning_GetGamma(IMPISPGamma *gamma)
 int IMP_ISP_Tuning_GetAeLuma(int *luma)
 int IMP_ISP_Tuning_SetAeFreeze(IMPISPTuningOpsMode mode)
 int IMP_ISP_Tuning_SetExpr(IMPISPExpr *expr)
