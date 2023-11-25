@@ -1075,5 +1075,5 @@ char *IMPTune(int fd, char *tokenPtr) {
     ch = atoi(p);
     p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   }
-  return "error";
+  return "Usage: [command] [parameters]\nUse without parameters to retrieve current values.";
 }
