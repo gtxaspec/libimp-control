@@ -1,10 +1,9 @@
 #include <arpa/inet.h>
+#include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <netdb.h>
 #include <netinet/in.h>
 #include <pthread.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -198,27 +197,27 @@ static void *CommandThread(void *arg) {
     return NULL;
 }
 
-void sigint_handler(int signum) {
-    printf("Caught SIGINT (signal number %d). Cleaning up...\n", signum);
-    raise(SIGINT);
-    exit(0);
-}
+// Hook function with the same signature as IMP_System_Init
+// Avoiding the use of a constructor because launching our own
+// thread interferes with the host program's complex threading mechanisms.
+int IMP_System_Init() {
+    static int (*original_IMP_System_Init)(void) = NULL;
 
-// Initialization function
-static void __attribute ((constructor)) command_init(void) {
-    // Code to be executed when the library is loaded
-    printf("Library loaded, initializing...\n");
-    printf("\nLIBIMP_CONTROL Version: %s\n", VERSION);
-
-    signal(SIGINT, sigint_handler);
-    if (signal(SIGINT, sigint_handler) == SIG_ERR) {
-        printf("Error setting up signal handler\n");
+    if (!original_IMP_System_Init) {
+        // Dynamically look up the original IMP_System_Init function
+        original_IMP_System_Init = dlsym(RTLD_NEXT, "IMP_System_Init");
+        if (!original_IMP_System_Init) {
+            fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
+            return -1;
+        }
     }
 
+    // Start our thread prior to the original function
+    printf("LIBIMP_CONTROL Version: %s\n", VERSION);
 
     if (pipe(SelfPipe) != 0) {
         fprintf(stderr, "pipe creation error\n");
-        return;
+        return -1;
     }
 
     // Set pipe to non-blocking mode
@@ -230,15 +229,20 @@ static void __attribute ((constructor)) command_init(void) {
     pthread_t thread;
     if (pthread_create(&thread, NULL, CommandThread, NULL) != 0) {
         fprintf(stderr, "thread creation error\n");
-        return;
+        return -1;
     }
 
     // Detach the thread to free resources when it's finished
     pthread_detach(thread);
-}
 
-__attribute__((destructor))
-void libimp_finalizer(void) {
-    // Code to be executed when the library is unloaded or program exits
-    printf("Library is being unloaded...\n");
+    // Unset LD_PRELOAD to prevent it from being inherited by child processes
+    // This also prevents the host program's built-in webserver from breaking
+    unsetenv("LD_PRELOAD");
+
+    // Call the original IMP_System_Init function
+    int result = original_IMP_System_Init();
+
+    // We can also place code here to run after the original function
+
+    return result;
 }
