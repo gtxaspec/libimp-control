@@ -7,7 +7,7 @@ CC := $(CROSS_COMPILE)gcc
 CFLAGS := -fPIC -std=gnu99 -shared -ldl -lm -pthread
 
 # Source files
-SRCS := setlinebuf.c command.c imp_control.c
+SRCS := command.c imp_control.c imp_control_audio.c imp_control_video.c
 
 # Target library
 TARGET := libimp_control.so

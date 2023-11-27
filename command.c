@@ -4,6 +4,7 @@
 #include <fcntl.h>      // For fcntl
 #include <netinet/in.h> // For sockaddr_in
 #include <pthread.h>    // For pthread_create, pthread_detach
+#include <sys/select.h> // For select
 #include <stdio.h>      // For printf, fprintf, etc.
 #include <stdlib.h>     // For NULL, exit
 #include <string.h>     // For strlen, strtok_r, etc.
