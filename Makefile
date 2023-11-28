@@ -6,6 +6,15 @@
 CC := $(CROSS_COMPILE)gcc
 CFLAGS := -fPIC -std=gnu99 -shared -ldl -lm -pthread
 
+# Macro for T10/T20/T30
+ifeq ($(filter $(CONFIG_SOC),t10 t20 t30),)
+    # If CONFIG_SOC is NOT T10/T20/T30
+    CFLAGS += -DCONFIG_T31
+else
+    # If CONFIG_SOC is T10/T20/T30
+    CFLAGS += -DCONFIG_T20
+endif
+
 # Source files
 SRCS := command.c imp_control.c imp_control_audio.c imp_control_video.c
 

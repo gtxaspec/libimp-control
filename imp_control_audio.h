@@ -11,9 +11,10 @@ char *AlcGain(char *tokenPtr);
 char *aoVolume(char *tokenPtr);
 char *aoGain(char *tokenPtr);
 
-
 static const int AudioDeviceID = 0;
 static const int AudioChID = 0;
+
+static char response[1024]; // Buffer for response message
 
 typedef struct {
   int samplerate; // Audio sampling rate.
@@ -24,11 +25,9 @@ typedef struct {
   int chnCnt;  // Number of channels supported.
 } IMPAudioIOAttr;
 
-#ifndef CONFIG_T20
 // ALC gain value. 0 - 7
 extern int IMP_AI_SetAlcGain(int audioDevId, int aiChn, int aiPgaGain);
 extern int IMP_AI_GetAlcGain(int audioDevId, int aiChn, int *aiPgaGain);
-#endif
 
 // Attribute of the audio input device.
 extern int IMP_AI_SetPubAttr(int audioDevId, IMPAudioIOAttr *attr);

@@ -51,12 +51,9 @@ char *SetChnQpIPDelta(char *tokenPtr);
 char *GetOSDRegionAttributes(char *tokenPtr);
 char *GetOSDGroupRegionAttributes(char *tokenPtr);
 
-/////////////////
-// Video begin //
-/////////////////
+static char response[1024]; // Buffer for response message
 
 // These functions do not exist on <T31
-#ifndef CONFIG_T20
 // AE Max parameters.
 extern int IMP_ISP_Tuning_SetAe_IT_MAX(unsigned int it_max);
 extern int IMP_ISP_Tuning_GetAE_IT_MAX(unsigned int *it_max);
@@ -141,7 +138,6 @@ extern int IMP_ISP_Tuning_GetMask(IMPISPMASKAttr *mask);
 // ISP Backlight Compensation
 extern int IMP_ISP_Tuning_SetBacklightComp(uint32_t strength);
 extern int IMP_ISP_Tuning_GetBacklightComp(uint32_t *strength);
-#endif
 
 // Contrast
 extern int IMP_ISP_Tuning_SetContrast(unsigned char contrast);
@@ -416,6 +412,7 @@ int IMP_Encoder_SetChnEntropyMode(int encChn,IMPEncoderEntropyMode eEntropyMode)
 int IMP_FrameSource_GetChnAttr(int chnNum, IMPFSChnAttr *chnAttr);
 int IMP_FrameSource_GetFrameDepth(int chnNum, int *depth);
 int IMP_FrameSource_ChnStatQuery(int chnNum, IMPFSChannelState *pstate);
+get sensor bin
 */
 
 #endif // IMP_CONTROL_VIDEO_H

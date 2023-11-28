@@ -6,14 +6,7 @@
 #include "imp_control_video.h"
 #include "include/imp_encoder.h"
 
-/////////////////
-// Begin Video //
-/////////////////
-
-static char response[1024]; // Buffer for response message
-
 char *Flip(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     int vflip, hflip;
@@ -44,7 +37,6 @@ char *Flip(char *tokenPtr) {
 }
 
 char *Contrast(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     unsigned char cont;
@@ -57,7 +49,6 @@ char *Contrast(char *tokenPtr) {
 }
 
 char *Brightness(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     unsigned char bri;
@@ -70,7 +61,6 @@ char *Brightness(char *tokenPtr) {
 }
 
 char *Saturation(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     unsigned char sat;
@@ -83,7 +73,6 @@ char *Saturation(char *tokenPtr) {
 }
 
 char *Sharpness(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     unsigned char sharpness;
@@ -96,7 +85,6 @@ char *Sharpness(char *tokenPtr) {
 }
 
 char *AEComp(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     int comp;
@@ -109,7 +97,7 @@ char *AEComp(char *tokenPtr) {
 }
 
 char *AEItMax(char *tokenPtr) {
-
+#ifndef CONFIG_T20
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     unsigned int itMax;
@@ -119,10 +107,12 @@ char *AEItMax(char *tokenPtr) {
   }
   int res = IMP_ISP_Tuning_SetAe_IT_MAX(atoi(p));
   return res ? "error": "ok";
+#else
+  return "not supported on >T20";
+#endif
 }
 
 char *Sinter(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) return "error";
   int res = IMP_ISP_Tuning_SetSinterStrength(atoi(p));
@@ -130,7 +120,6 @@ char *Sinter(char *tokenPtr) {
 }
 
 char *Temper(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) return "error";
   int res = IMP_ISP_Tuning_SetTemperStrength(atoi(p));
@@ -138,7 +127,7 @@ char *Temper(char *tokenPtr) {
 }
 
 char *DPC(char *tokenPtr) {
-
+#ifndef CONFIG_T20
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     unsigned int dpc;
@@ -148,10 +137,13 @@ char *DPC(char *tokenPtr) {
   }
   int res = IMP_ISP_Tuning_SetDPC_Strength(atoi(p));
   return res ? "error": "ok";
+#else
+  return "not supported on >T20";
+#endif
 }
 
 char *DRC(char *tokenPtr) {
-
+#ifndef CONFIG_T20
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     unsigned int drc;
@@ -161,10 +153,12 @@ char *DRC(char *tokenPtr) {
   }
   int res = IMP_ISP_Tuning_SetDRC_Strength(atoi(p));
   return res ? "error": "ok";
+#else
+  return "not supported on >T20";
+#endif
 }
 
 char *HiLight(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     unsigned int strength;
@@ -177,7 +171,6 @@ char *HiLight(char *tokenPtr) {
 }
 
 char *AGain(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     unsigned int gain;
@@ -190,7 +183,6 @@ char *AGain(char *tokenPtr) {
 }
 
 char *DGain(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     unsigned int gain;
@@ -203,7 +195,7 @@ char *DGain(char *tokenPtr) {
 }
 
 char *Hue(char *tokenPtr) {
-
+#ifndef CONFIG_T20
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     unsigned char hue;
@@ -213,10 +205,12 @@ char *Hue(char *tokenPtr) {
   }
   int res = IMP_ISP_Tuning_SetBcshHue(atoi(p));
   return res ? "error": "ok";
+#else
+  return "not supported on >T20";
+#endif
 }
 
 char *Mode(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     IMPISPRunningMode mode;
@@ -229,7 +223,6 @@ char *Mode(char *tokenPtr) {
 }
 
 char *Flicker(char *tokenPtr) {
-
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   if(!p) {
     IMPISPAntiflickerAttr flicker;
@@ -262,6 +255,7 @@ char *Gamma(char *tokenPtr) {
 
 // Example: autozoom 0 1 1920 1080 1 800 200 640 480
 char *SetAutoZoom(char *tokenPtr) {
+    #ifndef CONFIG_T20
     IMPISPAutoZoom zoomParams;
     char *response = "error"; // Default response is error
     char *p;
@@ -294,11 +288,15 @@ char *SetAutoZoom(char *tokenPtr) {
     }
 
     return response;
+#else
+  return "not supported on >T20";
+#endif
 }
 
 // Example : fcrop 1 180 320 1280 720
 // fcrop <enable> <top> <left> <width> <height>
 char *FrontCrop(char *tokenPtr) {
+    #ifndef CONFIG_T20
     IMPISPFrontCrop frontCropParams;
     char *response = "error"; // Default response is error
     char *p;
@@ -342,12 +340,15 @@ char *FrontCrop(char *tokenPtr) {
     }
 
     return response;
+#else
+  return "not supported on >T20";
+#endif
 }
-
 
 // Example: video mask 0 1 100 100 400 400 100 100 100
 // mask <channel> <mask_en> <mask_pos_top> <mask_pos_left> <mask_width> <mask_height> <Red> <Green> <Blue>
 char *Mask(char *tokenPtr) {
+    #ifndef CONFIG_T20
     IMPISPMASKAttr maskAttr;
     char *response = "error";
     char *p;
@@ -411,6 +412,9 @@ char *Mask(char *tokenPtr) {
     }
 
     return response;
+#else
+  return "not supported on >T20";
+#endif
 }
 
 // rgain and bgain should work on manual mode?
@@ -497,6 +501,7 @@ char *SensorFPS(char *tokenPtr) {
 }
 
 char *BacklightComp(char *tokenPtr) {
+    #ifndef CONFIG_T20
     char *response = "error";
     char *p;
     uint32_t strength = 0;
@@ -529,6 +534,9 @@ char *BacklightComp(char *tokenPtr) {
     }
 
     return response;
+#else
+  return "not supported on >T20";
+#endif
 }
 
 char *GetEVAttributes(char *tokenPtr) {
@@ -541,20 +549,28 @@ char *GetEVAttributes(char *tokenPtr) {
 }
 
 char *GetAeLuma(char *tokenPtr) {
+    #ifndef CONFIG_T20
     int luma;
     int ret = IMP_ISP_Tuning_GetAeLuma(&luma);
     if (ret) return "error";
     sprintf(response, "%d", luma);
     return response;
+    #else
+        return "not supported on >T20";
+    #endif
 }
 
 char *AwbCt(char *tokenPtr) {
+    #ifndef CONFIG_T20
     unsigned int ct;
     int getRet = IMP_ISP_Tuning_GetAWBCt(&ct);
     if (getRet) return "error";
 
     sprintf(response, "%u", ct);
     return response;
+    #else
+        return "not supported on >T20";
+    #endif
 }
 
 char *GetAFMetrics(char *tokenPtr) {
@@ -573,6 +589,7 @@ char *GetTotalGain(char *tokenPtr) {
 }
 
 char *DefogStrength(char *tokenPtr) {
+    #ifndef CONFIG_T20
     char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
     uint8_t ratio;
 
@@ -590,9 +607,13 @@ char *DefogStrength(char *tokenPtr) {
 
     sprintf(response, "%u", ratio);
     return response; // Return the current defog strength value
+    #else
+        return "not supported on >T20";
+    #endif
 }
 
 char *AeMin(char *tokenPtr) {
+    #ifndef CONFIG_T20
     char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
     IMPISPAEMin ae_min;
 
@@ -624,9 +645,13 @@ char *AeMin(char *tokenPtr) {
     sprintf(response, "Min IT: %u, Min AGain: %u, Min IT Short: %u, Min AGain Short: %u", 
             ae_min.min_it, ae_min.min_again, ae_min.min_it_short, ae_min.min_again_short);
     return response; // Return the current AE Min parameters
+    #else
+        return "not supported on >T20";
+    #endif
 }
 
 char *GetAeAttr(char *tokenPtr) {
+    #ifndef CONFIG_T20
     IMPISPAEAttr aeAttr;
     memset(&aeAttr, 0, sizeof(IMPISPAEAttr)); // Zero-initialize the structure
 
@@ -645,6 +670,9 @@ char *GetAeAttr(char *tokenPtr) {
             aeAttr.AeWdrShortAGainManualEn, aeAttr.AeWdrShortAGain, aeAttr.AeWdrShortDGainManualEn, 
             aeAttr.AeWdrShortDGain, aeAttr.AeWdrShortIspDGainManualEn, aeAttr.AeWdrShortIspDGain);
     return response;
+    #else
+        return "not supported on >T20";
+    #endif
 }
 
 char *GetIMPVersion(char *tokenPtr) {
@@ -811,6 +839,7 @@ char *SetAndGetRcMode(char *tokenPtr) {
 
 
 char *SetAndGetGopAttr(char *tokenPtr) {
+    #ifndef CONFIG_T20
     int encChn;
     IMPEncoderGopAttr gopAttr;
 
@@ -835,9 +864,13 @@ char *SetAndGetGopAttr(char *tokenPtr) {
         snprintf(response, sizeof(response), "GOP length: %u", gopAttr.uGopLength);
         return response;
     }
+    #else
+      return "not supported on >T20";
+    #endif
 }
 
 char *SetBitRate(char *tokenPtr) {
+    #ifndef CONFIG_T20
     int encChn, iTargetBitRate, iMaxBitRate;
     char *p = strtok_r(tokenPtr, " \t\r\n", &tokenPtr);
     if (!p) return "Usage: <encChn> <iTargetBitRate> <iMaxBitRate>";
@@ -855,9 +888,13 @@ char *SetBitRate(char *tokenPtr) {
         return "Error: Set Bit Rate Failed";
     }
     return "Bit rate set successfully";
+    #else
+        return "not supported on >T20";
+    #endif
 }
 
 char *SetGopLength(char *tokenPtr) {
+    #ifndef CONFIG_T20
     int encChn, iGopLength;
     char *p = strtok_r(tokenPtr, " \t\r\n", &tokenPtr);
     if (!p) return "Usage: <encChn> <iGopLength>";
@@ -871,9 +908,13 @@ char *SetGopLength(char *tokenPtr) {
         return "Error: Set GOP Length Failed";
     }
     return "GOP length set successfully";
+    #else
+        return "not supported on >T20";
+    #endif
 }
 
 char *SetChnQp(char *tokenPtr) {
+    #ifndef CONFIG_T20
     int encChn, iQP;
     char *p = strtok_r(tokenPtr, " \t\r\n", &tokenPtr);
     if (!p) return "Usage: <encChn> <iQP>";
@@ -887,9 +928,13 @@ char *SetChnQp(char *tokenPtr) {
         return "Error: Set QP Failed";
     }
     return "QP set successfully";
+    #else
+        return "not supported on >T20";
+    #endif
 }
 
 char *SetChnQpBounds(char *tokenPtr) {
+    #ifndef CONFIG_T20
     int encChn, iMinQP, iMaxQP;
     char *p = strtok_r(tokenPtr, " \t\r\n", &tokenPtr);
     if (!p) return "Usage: <encChn> <iMinQP> <iMaxQP>";
@@ -907,9 +952,13 @@ char *SetChnQpBounds(char *tokenPtr) {
         return "Error: Set QP Bounds Failed";
     }
     return "QP bounds set successfully";
+    #else
+        return "not supported on >T20";
+    #endif
 }
 
 char *SetChnQpIPDelta(char *tokenPtr) {
+    #ifndef CONFIG_T20
     int encChn, uIPDelta;
     char *p = strtok_r(tokenPtr, " \t\r\n", &tokenPtr);
     if (!p) return "Usage: <encChn> <uIPDelta>";
@@ -923,6 +972,9 @@ char *SetChnQpIPDelta(char *tokenPtr) {
         return "Error: Set QP IP Delta Failed";
     }
     return "QP IP Delta set successfully";
+    #else
+        return "not supported on >T20";
+    #endif
 }
 
 char *GetOSDRegionAttributes(char *tokenPtr) {

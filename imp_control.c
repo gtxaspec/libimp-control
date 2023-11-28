@@ -73,7 +73,6 @@ static char *ShowHelp(char *tokenPtr) {
     return response;
 }
 
-
 struct CommandTableSt {
   const char *cmd;
   char * (*func)(char *);
@@ -152,5 +151,5 @@ char *IMPTune(int fd, char *tokenPtr) {
     ch = atoi(p);
     p = strtok_r(NULL, " \t\r\n", &tokenPtr);
   }
-  return "Usage: [command] [parameters]\nUse without parameters to retrieve current values.\nUsage: help to get a list of commands";
+  return "Usage: [command] [parameters] (Use without parameters to retrieve current values.)\nUse 'help' to get a list of commands";
 }
