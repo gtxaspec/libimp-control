@@ -16,7 +16,7 @@ else
 endif
 
 # Source files
-SRCS := command.c imp_control.c imp_control_audio.c imp_control_video.c
+SRCS := command.c imp_control.c imp_control_audio.c imp_control_video.c imp_demo.c
 
 # Target library
 TARGET := libimp_control.so

@@ -5,6 +5,8 @@
 #include "imp_control_video.h"
 #include "include/imp_osd.h"
 
+char* fullDemo(char *tokenPtr);
+
 static char *ShowHelp(char *tokenPtr) {
     static char response[] =
         "Usage: imp-control [command] [parameters]\n"
@@ -69,7 +71,8 @@ static char *ShowHelp(char *tokenPtr) {
         "getaeattr                                                         Get AE Attributes\n"
         "getimpversion                                                     Get IMP Version\n"
         "getcpuinfo                                                        Get CPU Info\n"
-        "help                                                              Show this help message\n";
+        "help                                                              Show this help message\n"
+        "full_demo                                                         Run a full demo";
     return response;
 }
 
@@ -79,6 +82,7 @@ struct CommandTableSt {
 };
 
 static struct CommandTableSt imp_ControlTable[] = {
+  { "full_demo", &fullDemo }, // Full demo
   { "help", &ShowHelp }, // No parameters
   { "aihpf",      &HighPassFilter }, // on/off
   { "aiagc",      &AutoGainControl }, // gainLevel:0-31(dB) maxGain:0-90(dB)
