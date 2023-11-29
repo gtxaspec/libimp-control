@@ -4,7 +4,8 @@
 
 # Compiler settings
 CC := $(CROSS_COMPILE)gcc
-CFLAGS := -fPIC -std=gnu99 -shared -ldl -lm -pthread
+CFLAGS := -fPIC -std=gnu99 -shared -ldl -lm -pthread -Os -ffunction-sections -fdata-sections -fomit-frame-pointer
+LDFLAGS := -Wl,--gc-sections
 
 # Macro for T10/T20/T30
 ifeq ($(filter $(CONFIG_SOC),t10 t20 t30),)
@@ -35,7 +36,9 @@ version.h:
 # Rule to build the target library
 $(TARGET): $(SRCS) version.h
 	@echo "Building target $(TARGET) with CC=$(CC)"
-	@$(CC) $(CFLAGS) -o $(TARGET) $(SRCS)
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(SRCS)
+	@echo "Stripping target $(TARGET)"
+	@$(CROSS_COMPILE)strip --strip-unneeded $(TARGET)
 
 # Clean up build artifacts
 clean:
