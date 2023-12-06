@@ -16,7 +16,7 @@ char *IMPTune(int fd, char *tokenPtr);
 char* MaskDemo() {
     srand(time(NULL)); // Seed the random number generator
     printf("Starting Mask Demo\n");
-    
+
     time_t start, now;
     time(&start);
 
@@ -63,12 +63,24 @@ void rampControlValue(const char *controlName) {
         setFunctionUint = &IMP_ISP_Tuning_SetTemperStrength;
     } else if (strcmp(controlName, "aecomp") == 0) {
         setFunctionInt = &IMP_ISP_Tuning_SetAeComp;
+#ifndef CONFIG_T20
     } else if (strcmp(controlName, "dpc") == 0) {
         setFunctionUint = &IMP_ISP_Tuning_SetDPC_Strength;
+#else
+	printf("not supported on platform");
+#endif
     } else if (strcmp(controlName, "drc") == 0) {
+#ifndef CONFIG_T20
         setFunctionUint = &IMP_ISP_Tuning_SetDRC_Strength;
+#else
+	printf("not supported on platform");
+#endif
     } else if (strcmp(controlName, "hue") == 0) {
+#ifndef CONFIG_T20
         setFunctionChar = &IMP_ISP_Tuning_SetBcshHue;
+#else
+	printf("not supported on platform");
+#endif
     }
 
     // Ramping logic for the control values
@@ -190,21 +202,29 @@ char* FrontCropDemo() {
     return "Front Crop demo complete";
 }
 
+void ispdemo() {
+IMP_ISP_Tuning_SetISPRunningMode(1);
+sleep(2);
+IMP_ISP_Tuning_SetISPRunningMode(0);
+}
+
 // Function to run the full demo sequence
 char* fullDemo() {
     printf("Starting Full Demo\n");
     const char *controls[] = {"brightness", "contrast", "saturation", "sharpness", "sinter", "temper", "aecomp", "dpc", "drc", "hue"};
     int numControls = sizeof(controls) / sizeof(controls[0]);
-   
+
     MaskDemo();
     sleep(1);
     WhitebalanceDemo();
     sleep(1);
     FrontCropDemo();
     sleep(1);
-    AutoZoomDemo();
+// Autozoom requires performant SOCs for now    
+//    AutoZoomDemo();
+//    sleep(1);
+    ispdemo();
     sleep(1);
-
     // Ramp all the controls
     for (int i = 0; i < numControls; i++) {
         printf("Ramping %s\n", controls[i]);
