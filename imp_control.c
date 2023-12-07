@@ -3,6 +3,7 @@
 #include <string.h>
 #include "imp_control_audio.h"
 #include "imp_control_video.h"
+#include "imp_control_util.h"
 #include "include/imp_osd.h"
 
 char* fullDemo(char *tokenPtr);
@@ -70,7 +71,10 @@ static char *ShowHelp(char *tokenPtr) {
         "gettotalgain                                                      Get Total Gain\n"
         "getaeattr                                                         Get AE Attributes\n"
         "getimpversion                                                     Get IMP Version\n"
-        "getcpuinfo                                                        Get CPU Info\n"
+        "getsysversion                                                     Get IMP-SYS Version\n"
+        "getcpuinfo                                                        Get SOC Info\n"
+        "getdeviceid                                                       Get SOC Serial Number\n"
+        "getmodelfamily                                                    Get SOC Family Model\n"
         "help                                                              Show this help message\n"
         "full_demo                                                         Run a full demo";
     return response;
@@ -133,6 +137,9 @@ static struct CommandTableSt imp_ControlTable[] = {
   { "getcpuinfo", &GetCPUInfo },
   { "getosdattr", &GetOSDRegionAttributes }, // Usage: getosdattr <handle>
   { "getosdgrpattr", &GetOSDGroupRegionAttributes }, // Usage: getosdgrpattr <handle> <group number>
+  { "getdeviceid", &GetDeviceID },
+  { "getmodelfamily", &GetModelFamily },
+  { "getsysversion", &GetSysVersion },
   // Set Only:
   { "setbitrate", &SetBitRate },
   { "setgoplength", &SetGopLength },

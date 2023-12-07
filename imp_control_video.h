@@ -38,8 +38,6 @@ char *GetTotalGain(char *tokenPtr);
 char *DefogStrength(char *tokenPtr);
 char *AeMin(char *tokenPtr);
 char *GetAeAttr(char *tokenPtr);
-char *GetIMPVersion(char *tokenPtr);
-char *GetCPUInfo(char *tokenPtr);
 char *SetAndGetFrameRate(char *tokenPtr);
 char *SetAndGetRcMode(char *tokenPtr);
 char *SetAndGetGopAttr(char *tokenPtr);
@@ -304,13 +302,6 @@ typedef struct {
 } IMPISPAEAttr;
 
 extern int IMP_ISP_Tuning_GetAeAttr(IMPISPAEAttr *ae);
-
-typedef struct {
-        char aVersion[64];      /**< IMP Version */
-} IMPVersion;
-
-extern int IMP_System_GetVersion(IMPVersion *pstVersion);
-extern const char* (*original_IMP_System_GetCPUInfo)(void);
 
 extern int IMP_OSD_GetRgnAttr(IMPRgnHandle handle, IMPOSDRgnAttr *prAttr);
 extern int IMP_OSD_GetGrpRgnAttr(IMPRgnHandle handle, int grpNum, IMPOSDGrpRgnAttr *pgrAttr);

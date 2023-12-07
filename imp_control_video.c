@@ -1,5 +1,4 @@
 #define _GNU_SOURCE
-#include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -673,36 +672,6 @@ char *GetAeAttr(char *tokenPtr) {
     #else
         return "not supported on >T20";
     #endif
-}
-
-char *GetIMPVersion(char *tokenPtr) {
-    IMPVersion version;
-    int ret = IMP_System_GetVersion(&version);
-    if (ret == 0) {
-        snprintf(response, sizeof(response), "IMP Version: %s", version.aVersion);
-    } else {
-        snprintf(response, sizeof(response), "Failed to get IMP version");
-    }
-    return response;
-}
-
-const char* (*original_IMP_System_GetCPUInfo)(void) = NULL;
-void initialize_original_functions() {
-    if (!original_IMP_System_GetCPUInfo) {
-        original_IMP_System_GetCPUInfo = dlsym(RTLD_NEXT, "IMP_System_GetCPUInfo");
-    }
-}
-
-char *GetCPUInfo(char *tokenPtr) {
- initialize_original_functions(); // Ensure the original function is loaded
-    if (original_IMP_System_GetCPUInfo) {
-        const char* cpuInfo = original_IMP_System_GetCPUInfo();    if (cpuInfo != NULL) {
-        snprintf(response, sizeof(response), "CPU Info: %s", cpuInfo);
-    } else {
-        snprintf(response, sizeof(response), "Failed to get CPU info");
-    }
-    return response;
-    }
 }
 
 char *SetAndGetFrameRate(char *tokenPtr) {
