@@ -24,7 +24,7 @@ static char *ShowHelp(char *tokenPtr) {
 			"aialc                [0-7]\n"
 			"aovol                [-30-120]\n"
 			"aogain               [0-31]\n"
-			"flip                 [normal/flip/mirror/flip_mirror]\n"
+			"flip                 [0/1/2/3]\n"
 			"contrast             [0-255]\n"
 			"brightness           [0-255]\n"
 			"saturation           [0-255]\n"

@@ -6,33 +6,45 @@
 #include "include/imp_encoder.h"
 
 char *Flip(char *tokenPtr) {
-  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-  if(!p) {
-	int vflip, hflip;
-	IMP_ISP_Tuning_GetISPHflip(&hflip);
-	IMP_ISP_Tuning_GetISPVflip(&vflip);
-	if(!hflip && !vflip) return "normal";
-	if(hflip && !vflip) return "flip";
-	if(!hflip && vflip) return "mirror";
-	return "flip_mirror";
-  }
+	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (!p) {
+		int vflip, hflip;
+		IMP_ISP_Tuning_GetISPHflip(&hflip);
+		IMP_ISP_Tuning_GetISPVflip(&vflip);
 
-  if(!strcmp(p, "normal")) {
-	IMP_ISP_Tuning_SetISPVflip(0);
-	IMP_ISP_Tuning_SetISPHflip(0);
-  } else if(!strcmp(p, "flip")) {
-	IMP_ISP_Tuning_SetISPVflip(1);
-	IMP_ISP_Tuning_SetISPHflip(0);
-  } else if(!strcmp(p, "mirror")) {
-	IMP_ISP_Tuning_SetISPVflip(0);
-	IMP_ISP_Tuning_SetISPHflip(1);
-  } else if(!strcmp(p, "flip_mirror")) {
-	IMP_ISP_Tuning_SetISPVflip(1);
-	IMP_ISP_Tuning_SetISPHflip(1);
-  } else {
-	return "error";
-  }
-  return "ok";
+		if (!hflip && !vflip) {
+			return "0"; // No flip, no mirror
+		} else if (hflip && !vflip) {
+			return "1"; // Mirror only
+		} else if (!hflip && vflip) {
+			return "2"; // Flip only
+		} else if (hflip && vflip) {
+			return "3"; // Flip and mirror
+		}
+	}
+
+	int flipValue = atoi(p);
+	switch (flipValue) {
+		case 0: // No flip, no mirror
+			IMP_ISP_Tuning_SetISPVflip(0);
+			IMP_ISP_Tuning_SetISPHflip(0);
+			break;
+		case 1: // Mirror only
+			IMP_ISP_Tuning_SetISPVflip(0);
+			IMP_ISP_Tuning_SetISPHflip(1);
+			break;
+		case 2: // Flip only
+			IMP_ISP_Tuning_SetISPVflip(1);
+			IMP_ISP_Tuning_SetISPHflip(0);
+			break;
+		case 3: // Flip and mirror
+			IMP_ISP_Tuning_SetISPVflip(1);
+			IMP_ISP_Tuning_SetISPHflip(1);
+			break;
+		default:
+			return "error";
+	}
+	return "ok";
 }
 
 char *Contrast(char *tokenPtr) {
