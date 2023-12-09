@@ -152,3 +152,22 @@ char *aoGain(char *tokenPtr) {
 	int ret = IMP_AO_SetGain(AudioDeviceID, AudioChID, atoi(p));
 	return ret ? "error" : "ok";
 }
+
+char *aoHighPassFilter(char *tokenPtr) {
+	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	int ret = -1;
+	if (p == NULL) {
+			return "Missing parameter";
+	}
+	int value = atoi(p);
+	if (value == 0) {
+			ret = IMP_AO_DisableHpf();
+	} else if (value == 1) {
+			IMPAudioIOAttr attr;
+			ret = IMP_AO_GetPubAttr(AudioDeviceID, &attr);
+			if (!ret) ret = IMP_AO_EnableHpf(&attr);
+	} else {
+			return "Invalid parameter";
+	}
+	return ret ? "error" : "ok";
+}

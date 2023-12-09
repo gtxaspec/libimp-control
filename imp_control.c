@@ -91,6 +91,7 @@ static struct CommandTableSt imp_ControlTable[] = {
 	{ "aivol",      &Volume }, // -30 - 120
 	{ "aigain",     &Gain }, // 0 - 31
 	{ "aialc",      &AlcGain }, // 0 - 7
+	{ "aohpf",      &aoHighPassFilter }, // on/off
 	{ "aovol",      &aoVolume }, // -30 - 120
 	{ "aogain",     &aoGain }, // 0 - 31
 	{ "flip",      &Flip }, // normal/flip/mirror/flip_mirror

@@ -8,6 +8,7 @@ char *EchoCancellation(char *tokenPtr);
 char *Volume(char *tokenPtr);
 char *Gain(char *tokenPtr);
 char *AlcGain(char *tokenPtr);
+char *aoHighPassFilter(char *tokenPtr);
 char *aoVolume(char *tokenPtr);
 char *aoGain(char *tokenPtr);
 
@@ -57,6 +58,10 @@ extern int IMP_AI_GetVol(int audioDevId, int aiChn, int *vol);
 extern int IMP_AI_SetGain(int audioDevId, int aiChn, int aiGain);
 extern int IMP_AI_GetGain(int audioDevId, int aiChn, int *aiGain);
 
+// Attribute of the audio input device.
+extern int IMP_AO_SetPubAttr(int audioDevId, IMPAudioIOAttr *attr);
+extern int IMP_AO_GetPubAttr(int audioDevId, IMPAudioIOAttr *attr);
+
 // Audio output volume. -30 - 120, default: 60
 extern int IMP_AO_SetVol(int audioDevId, int aoChn, int aoVol);
 extern int IMP_AO_GetVol(int audioDevId, int aoChn, int *vol);
@@ -64,5 +69,9 @@ extern int IMP_AO_GetVol(int audioDevId, int aoChn, int *vol);
 // Audio output gain. 0 - 31
 extern int IMP_AO_SetGain(int audioDevId, int aoChn, int aoGain);
 extern int IMP_AO_GetGain(int audioDevId, int aoChn, int *aoGain);
+
+// AO high pass filtering function.
+extern int IMP_AO_DisableHpf();
+extern int IMP_AO_EnableHpf(IMPAudioIOAttr *attr);
 
 #endif // IMP_CONTROL_AUDIO_H

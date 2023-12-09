@@ -333,7 +333,8 @@ char *FrontCrop(char *tokenPtr) {
 		int res = IMP_ISP_Tuning_GetFrontCrop(&frontCropParams);
 		if (res == 0) {
 			static char buffer[128];
-			sprintf(buffer, "Enable: %d, Top: %u, Left: %u, Width: %u, Height: %u",
+			//sprintf(buffer, "Enable: %d, Top: %u, Left: %u, Width: %u, Height: %u",
+			sprintf(buffer, "%d %u %u %u %u",
 					frontCropParams.fcrop_enable,
 					frontCropParams.fcrop_top,
 					frontCropParams.fcrop_left,
@@ -402,7 +403,8 @@ char *Mask(char *tokenPtr) {
 		if (res == 0) {
 			static char buffer[256];
 			// Assuming we are formatting for channel 0 RGB type for simplicity
-			sprintf(buffer, "Enable: %d, Top: %u, Left: %u, Width: %u, Height: %u, R: %u, G: %u, B: %u",
+			//sprintf(buffer, " %d, Top: %u, Left: %u, Width: %u, Height: %u, R: %u, G: %u, B: %u",
+			sprintf(buffer, "%d %u %u %u %u %u %u %u",
 					maskAttr.chn0[channel].mask_en,
 					maskAttr.chn0[channel].mask_pos_top,
 					maskAttr.chn0[channel].mask_pos_left,
@@ -712,7 +714,8 @@ char *SetAndGetFrameRate(char *tokenPtr) {
 		if (IMP_Encoder_GetChnFrmRate(encChn, &frmRate) != 0) {
 			return "Error: Get Frame Rate Failed";
 		}
-		snprintf(response, sizeof(response), "Frame rate: %u/%u", frmRate.frmRateNum, frmRate.frmRateDen);
+		//snprintf(response, sizeof(response), "Frame rate: %u/%u", frmRate.frmRateNum, frmRate.frmRateDen);
+		snprintf(response, sizeof(response), "%u", frmRate.frmRateNum);
 		return response;
 	}
 }
@@ -842,7 +845,8 @@ char *SetAndGetGopAttr(char *tokenPtr) {
 		if (IMP_Encoder_GetChnGopAttr(encChn, &gopAttr) != 0) {
 			return "Error: Get GOP Attribute Failed";
 		}
-		snprintf(response, sizeof(response), "GOP length: %u", gopAttr.uGopLength);
+		//snprintf(response, sizeof(response), "GOP length: %u", gopAttr.uGopLength);
+		snprintf(response, sizeof(response), "%u", gopAttr.uGopLength);
 		return response;
 	}
 	#else

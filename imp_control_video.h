@@ -381,17 +381,6 @@ int32_t IMP_ISP_SET_GPIO_STA(IMPISPGPIO *attr);
 int IMP_Encoder_GetChnAttr(int encChn, IMPEncoderChnAttr * const attr);
 int IMP_Encoder_Query(int encChn, IMPEncoderChnStat *stat);
 
-int IMP_Encoder_SetChnGopLength(int encChn, int iGopLength);
-
-int IMP_Encoder_GetChnGopAttr(int encChn, IMPEncoderGopAttr *pGopAttr);
-int IMP_Encoder_SetChnGopAttr(int encChn, const IMPEncoderGopAttr *pGopAttr);
-
-int IMP_Encoder_SetChnQp(int encChn, int iQP);
-
-int IMP_Encoder_SetChnQpBounds(int encChn, int iMinQP, int iMaxQP);
-
-int IMP_Encoder_SetChnQpIPDelta(int encChn, int uIPDelta);
-
 int IMP_Encoder_SetFisheyeEnableStatus(int encChn, int enable);
 int IMP_Encoder_GetFisheyeEnableStatus(int encChn, int *enable);
 int IMP_Encoder_GetChnEncType(int encChn, IMPEncoderEncType *encType);
