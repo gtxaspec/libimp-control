@@ -110,7 +110,7 @@ void rampControlValue(const char *controlName) {
 char* WhitebalanceDemo() {
 	printf("Starting Whitebalance Demo\n");
 
-	for (int wb = 1; wb <= 10; wb++) {
+	for (int wb = 1; wb <= 9; wb++) {
 		char command[256];
 		snprintf(command, sizeof(command), "whitebalance %d", wb % 10);
 
