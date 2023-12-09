@@ -17,12 +17,12 @@ static const int AudioChID = 0;
 static char response[1024]; // Buffer for response message
 
 typedef struct {
-  int samplerate; // Audio sampling rate.
-  int bitwidth; // Audio sampling precision. 16 bit
-  int soundmode; // Audio channel mode. 1(mono)
-  int frmNum;  // Number of cached frames, range: [2, MAX_AUDIO_FRAME_NUM].
-  int numPerFrm; // Number of sample points per frame.
-  int chnCnt;  // Number of channels supported.
+	int samplerate; // Audio sampling rate.
+	int bitwidth; // Audio sampling precision. 16 bit
+	int soundmode; // Audio channel mode. 1(mono)
+	int frmNum;  // Number of cached frames, range: [2, MAX_AUDIO_FRAME_NUM].
+	int numPerFrm; // Number of sample points per frame.
+	int chnCnt;  // Number of channels supported.
 } IMPAudioIOAttr;
 
 // ALC gain value. 0 - 7

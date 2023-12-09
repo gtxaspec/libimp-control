@@ -85,11 +85,11 @@ extern int IMP_ISP_Tuning_SetAutoZoom(IMPISPAutoZoom *ispautozoom);
 
 // ISP Front Crop
 typedef struct {
-        bool fcrop_enable;
-        unsigned int fcrop_top;
-        unsigned int fcrop_left;
-        unsigned int fcrop_width;
-        unsigned int fcrop_height;
+	bool fcrop_enable;
+	unsigned int fcrop_top;
+	unsigned int fcrop_left;
+	unsigned int fcrop_width;
+	unsigned int fcrop_height;
 } IMPISPFrontCrop;
 
 extern int IMP_ISP_Tuning_SetFrontCrop(IMPISPFrontCrop *ispfrontcrop);
@@ -97,37 +97,37 @@ extern int IMP_ISP_Tuning_GetFrontCrop(IMPISPFrontCrop *ispfrontcrop);
 
 // ISP Masking Zone
 typedef enum {
-        IMPISP_MASK_TYPE_RGB = 0,
-        IMPISP_MASK_TYPE_YUV = 1,
+	IMPISP_MASK_TYPE_RGB = 0,
+	IMPISP_MASK_TYPE_YUV = 1,
 } IMPISP_MASK_TYPE;
 
 typedef union mask_value {
-        struct {
-                unsigned char Red;
-                unsigned char Green;
-                unsigned char Blue;
-        } mask_rgb;
-        struct {
-                unsigned char y_value;
-                unsigned char u_value;
-                unsigned char v_value;
-        } mask_ayuv;
+	struct {
+		unsigned char Red;
+		unsigned char Green;
+		unsigned char Blue;
+	} mask_rgb;
+	struct {
+		unsigned char y_value;
+		unsigned char u_value;
+		unsigned char v_value;
+	} mask_ayuv;
 } IMP_ISP_MASK_VALUE;
 
 typedef struct isp_mask_block_par {
-        unsigned char mask_en;
-        unsigned short mask_pos_top;
-        unsigned short mask_pos_left;
-        unsigned short mask_width;
-        unsigned short mask_height;
-        IMP_ISP_MASK_VALUE mask_value;
+	unsigned char mask_en;
+	unsigned short mask_pos_top;
+	unsigned short mask_pos_left;
+	unsigned short mask_width;
+	unsigned short mask_height;
+	IMP_ISP_MASK_VALUE mask_value;
 } IMPISP_MASK_BLOCK_PAR;
 
 typedef struct {
-        IMPISP_MASK_BLOCK_PAR chn0[4];
-        IMPISP_MASK_BLOCK_PAR chn1[4];
-        IMPISP_MASK_BLOCK_PAR chn2[4];
-        IMPISP_MASK_TYPE mask_type;
+	IMPISP_MASK_BLOCK_PAR chn0[4];
+	IMPISP_MASK_BLOCK_PAR chn1[4];
+	IMPISP_MASK_BLOCK_PAR chn2[4];
+	IMPISP_MASK_TYPE mask_type;
 } IMPISPMASKAttr;
 
 extern int IMP_ISP_Tuning_SetMask(IMPISPMASKAttr *mask);
@@ -185,8 +185,8 @@ extern int IMP_ISP_Tuning_GetISPVflip(int *pmode);
 
 // ISP Day / Night mode
 typedef enum {
-        IMPISP_RUNNING_MODE_DAY = 0,
-        IMPISP_RUNNING_MODE_NIGHT = 1,
+	IMPISP_RUNNING_MODE_DAY = 0,
+	IMPISP_RUNNING_MODE_NIGHT = 1,
 } IMPISPRunningMode;
 
 extern int IMP_ISP_Tuning_SetISPRunningMode(IMPISPRunningMode mode);
@@ -194,9 +194,9 @@ extern int IMP_ISP_Tuning_GetISPRunningMode(IMPISPRunningMode *pmode);
 
 // ISP Anti-Flicker effect
 typedef enum {
-        IMPISP_ANTIFLICKER_DISABLE = 0,
-        IMPISP_ANTIFLICKER_50HZ = 1,
-        IMPISP_ANTIFLICKER_60HZ = 2,
+	IMPISP_ANTIFLICKER_DISABLE = 0,
+	IMPISP_ANTIFLICKER_50HZ = 1,
+	IMPISP_ANTIFLICKER_60HZ = 2,
 } IMPISPAntiflickerAttr;
 
 extern int IMP_ISP_Tuning_SetAntiFlickerAttr(IMPISPAntiflickerAttr attr);
@@ -204,29 +204,29 @@ extern int IMP_ISP_Tuning_GetAntiFlickerAttr(IMPISPAntiflickerAttr *pattr);
 
 // ISP Gamma
 typedef struct {
-        uint16_t gamma[129];
+	uint16_t gamma[129];
 } IMPISPGamma;
 
 extern int IMP_ISP_Tuning_GetGamma(IMPISPGamma *gamma);
 
 // ISP White Balance
 typedef enum isp_core_wb_mode {
-        ISP_CORE_WB_MODE_AUTO = 0,
-        ISP_CORE_WB_MODE_MANUAL = 1,
-        ISP_CORE_WB_MODE_DAY_LIGHT = 2,
-        ISP_CORE_WB_MODE_CLOUDY = 3,
-        ISP_CORE_WB_MODE_INCANDESCENT = 4,
-        ISP_CORE_WB_MODE_FLOURESCENT = 5,
-        ISP_CORE_WB_MODE_TWILIGHT = 6,
-        ISP_CORE_WB_MODE_SHADE = 7,
-        ISP_CORE_WB_MODE_WARM_FLOURESCENT = 8,
-        ISP_CORE_WB_MODE_CUSTOM = 9,
+	ISP_CORE_WB_MODE_AUTO = 0,
+	ISP_CORE_WB_MODE_MANUAL = 1,
+	ISP_CORE_WB_MODE_DAY_LIGHT = 2,
+	ISP_CORE_WB_MODE_CLOUDY = 3,
+	ISP_CORE_WB_MODE_INCANDESCENT = 4,
+	ISP_CORE_WB_MODE_FLOURESCENT = 5,
+	ISP_CORE_WB_MODE_TWILIGHT = 6,
+	ISP_CORE_WB_MODE_SHADE = 7,
+	ISP_CORE_WB_MODE_WARM_FLOURESCENT = 8,
+	ISP_CORE_WB_MODE_CUSTOM = 9,
 } isp_core_wb_mode;
 
 typedef struct isp_core_wb_attr{
-        enum isp_core_wb_mode mode;
-        uint16_t rgain;
-        uint16_t bgain;
+	enum isp_core_wb_mode mode;
+	uint16_t rgain;
+	uint16_t bgain;
 }IMPISPWB;
 
 extern int IMP_ISP_Tuning_SetWB(IMPISPWB *wb);
@@ -238,12 +238,12 @@ extern int IMP_ISP_Tuning_SetSensorFPS(uint32_t fps_num, uint32_t fps_den);
 extern int IMP_ISP_Tuning_GetSensorFPS(uint32_t *fps_num, uint32_t *fps_den);
 
 typedef struct {
-        uint32_t ev;                    /**< exposure value*/
-        uint32_t expr_us;               /**< exposure time in millisecond */
-        uint32_t ev_log2;               /**< exposure time in log2 format */
-        uint32_t again;                 /**< Analog gain */
-        uint32_t dgain;                 /**< Digital gain */
-        uint32_t gain_log2;             /**< Gain in log2 format */
+	uint32_t ev;                    /**< exposure value*/
+	uint32_t expr_us;               /**< exposure time in millisecond */
+	uint32_t ev_log2;               /**< exposure time in log2 format */
+	uint32_t again;                 /**< Analog gain */
+	uint32_t dgain;                 /**< Digital gain */
+	uint32_t gain_log2;             /**< Gain in log2 format */
 }IMPISPEVAttr;
 
 extern int IMP_ISP_Tuning_GetEVAttr(IMPISPEVAttr *attr);
@@ -258,9 +258,9 @@ extern int IMP_ISP_Tuning_GetAFMetrices(unsigned int *metric);
 extern int IMP_ISP_Tuning_GetTotalGain(uint32_t *gain);
 
 typedef enum {
-        IMPISP_TUNING_OPS_MODE_DISABLE,                 /**< DISABLE mode of the current module */
-        IMPISP_TUNING_OPS_MODE_ENABLE,                  /**< ENABLE mode of the current module */
-        IMPISP_TUNING_OPS_MODE_BUTT,                    /**< effect paramater, parameters have to be less than this value*/
+	IMPISP_TUNING_OPS_MODE_DISABLE,                 /**< DISABLE mode of the current module */
+	IMPISP_TUNING_OPS_MODE_ENABLE,                  /**< ENABLE mode of the current module */
+	IMPISP_TUNING_OPS_MODE_BUTT,                    /**< effect paramater, parameters have to be less than this value*/
 } IMPISPTuningOpsMode;
 
 extern int IMP_ISP_Tuning_EnableDefog(IMPISPTuningOpsMode mode);
@@ -268,37 +268,37 @@ extern int32_t IMP_ISP_Tuning_SetDefog_Strength(uint8_t *ratio);
 extern int32_t IMP_ISP_Tuning_GetDefog_Strength(uint8_t *ratio);
 
 typedef struct {
-        unsigned int min_it;  /**< AE min integration time */
-        unsigned int min_again;  /**< AE min analog gain */
-        unsigned int min_it_short; /**< AE min integration time on short frame */
-        unsigned int min_again_short; /**< AE min analog gain on short frame */
+	unsigned int min_it;  /**< AE min integration time */
+	unsigned int min_again;  /**< AE min analog gain */
+	unsigned int min_it_short; /**< AE min integration time on short frame */
+	unsigned int min_again_short; /**< AE min analog gain on short frame */
 } IMPISPAEMin;
 
 extern int IMP_ISP_Tuning_SetAeMin(IMPISPAEMin *ae_min);
 extern int IMP_ISP_Tuning_GetAeMin(IMPISPAEMin *ae_min);
 
 typedef struct {
-        /* Ae Manual Attr On Linear Mode and Long Frame Which on WDR MODE */
-        IMPISPTuningOpsMode AeFreezenEn;    /* Ae Freezen Manual enable ctrl */
-        IMPISPTuningOpsMode AeItManualEn;       /* Ae Integration time Manual enable ctrl */
-        unsigned int AeIt;                         /* Ae Integration time value */
-        IMPISPTuningOpsMode AeAGainManualEn;       /* Ae Sensor Analog Gain Manual enable ctrl */
-        unsigned int AeAGain;                         /* Ae Sensor Analog Gain value */
-        IMPISPTuningOpsMode AeDGainManualEn;       /* Ae Sensor Digital Gain Manual enable ctrl */
-        unsigned int AeDGain;                         /* Ae Sensor Digital Gain value */
-        IMPISPTuningOpsMode AeIspDGainManualEn;       /* Ae Isp Digital Gain Manual enable ctrl */
-        unsigned int AeIspDGain;                         /* Ae Isp Digital Gain value */
+	/* Ae Manual Attr On Linear Mode and Long Frame Which on WDR MODE */
+	IMPISPTuningOpsMode AeFreezenEn;    /* Ae Freezen Manual enable ctrl */
+	IMPISPTuningOpsMode AeItManualEn;       /* Ae Integration time Manual enable ctrl */
+	unsigned int AeIt;                         /* Ae Integration time value */
+	IMPISPTuningOpsMode AeAGainManualEn;       /* Ae Sensor Analog Gain Manual enable ctrl */
+	unsigned int AeAGain;                         /* Ae Sensor Analog Gain value */
+	IMPISPTuningOpsMode AeDGainManualEn;       /* Ae Sensor Digital Gain Manual enable ctrl */
+	unsigned int AeDGain;                         /* Ae Sensor Digital Gain value */
+	IMPISPTuningOpsMode AeIspDGainManualEn;       /* Ae Isp Digital Gain Manual enable ctrl */
+	unsigned int AeIspDGain;                         /* Ae Isp Digital Gain value */
 
-        /* Ae Mnaual Attr on Short Frame Which on WDR Mode*/
-        IMPISPTuningOpsMode AeWdrShortFreezenEn;    /* AeWdrShort Freezen Manual enable ctrl */
-        IMPISPTuningOpsMode AeWdrShortItManualEn;       /* AeWdrShort Integration time Manual enable ctrl */
-        unsigned int AeWdrShortIt;                         /* AeWdrShort Integration time value */
-        IMPISPTuningOpsMode AeWdrShortAGainManualEn;       /* AeWdrShort Sensor Analog Gain Manual enable ctrl */
-        unsigned int AeWdrShortAGain;                         /* AeWdrShort Sensor Analog Gain value */
-        IMPISPTuningOpsMode AeWdrShortDGainManualEn;       /* AeWdrShort Sensor Digital Gain Manual enable ctrl */
-        unsigned int AeWdrShortDGain;                         /* AeWdrShort Sensor Digital Gain value */
-        IMPISPTuningOpsMode AeWdrShortIspDGainManualEn;       /* AeWdrShort Isp Digital Gain Manual enable ctrl */
-        unsigned int AeWdrShortIspDGain;                         /* AeWdrShort Isp Digital Gain value */
+	/* Ae Mnaual Attr on Short Frame Which on WDR Mode*/
+	IMPISPTuningOpsMode AeWdrShortFreezenEn;    /* AeWdrShort Freezen Manual enable ctrl */
+	IMPISPTuningOpsMode AeWdrShortItManualEn;       /* AeWdrShort Integration time Manual enable ctrl */
+	unsigned int AeWdrShortIt;                         /* AeWdrShort Integration time value */
+	IMPISPTuningOpsMode AeWdrShortAGainManualEn;       /* AeWdrShort Sensor Analog Gain Manual enable ctrl */
+	unsigned int AeWdrShortAGain;                         /* AeWdrShort Sensor Analog Gain value */
+	IMPISPTuningOpsMode AeWdrShortDGainManualEn;       /* AeWdrShort Sensor Digital Gain Manual enable ctrl */
+	unsigned int AeWdrShortDGain;                         /* AeWdrShort Sensor Digital Gain value */
+	IMPISPTuningOpsMode AeWdrShortIspDGainManualEn;       /* AeWdrShort Isp Digital Gain Manual enable ctrl */
+	unsigned int AeWdrShortIspDGain;                         /* AeWdrShort Isp Digital Gain value */
 } IMPISPAEAttr;
 
 extern int IMP_ISP_Tuning_GetAeAttr(IMPISPAEAttr *ae);
