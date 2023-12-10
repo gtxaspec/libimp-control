@@ -1,21 +1,8 @@
 #ifndef IMP_CONTROL_AUDIO_H
 #define IMP_CONTROL_AUDIO_H
 
-char *HighPassFilter(char *tokenPtr);
-char *AutoGainControl(char *tokenPtr);
-char *NoiseSuppression(char *tokenPtr);
-char *EchoCancellation(char *tokenPtr);
-char *Volume(char *tokenPtr);
-char *Gain(char *tokenPtr);
-char *AlcGain(char *tokenPtr);
-char *aoHighPassFilter(char *tokenPtr);
-char *aoVolume(char *tokenPtr);
-char *aoGain(char *tokenPtr);
-
 static const int AudioDeviceID = 0;
 static const int AudioChID = 0;
-
-static char response[1024]; // Buffer for response message
 
 typedef struct {
 	int samplerate; // Audio sampling rate.

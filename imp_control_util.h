@@ -3,34 +3,36 @@
 
 #include <stdint.h>
 
-#define MAX_INFO_LEN        64
+#define MAX_INFO_LEN        1024
+#define TAG	                "LIBIMP_CONTROL"
 
-char *GetDeviceID();
-char *GetModelFamily();
-char *GetSysVersion();
-char *GetIMPVersion(char *tokenPtr);
-char *GetCPUInfo(char *tokenPtr);
+#ifdef DEBUG
+    #define RESULT(RES, P) ((RES) ? "error" : (P))
+#else
+    #define RESULT(RES, P) NULL
+#endif
+
+static char response[MAX_INFO_LEN]; // Buffer for response message
 
 typedef union {
-		char chr[MAX_INFO_LEN];         /**< Device ID in string */
-		uint8_t hex[MAX_INFO_LEN];      /**< Device ID in binary */
+		char chr[MAX_INFO_LEN];
+		uint8_t hex[MAX_INFO_LEN];
 } SUDevID;
 
 typedef struct {
-		char chr[MAX_INFO_LEN];         /**< Device Model strings */
+		char chr[MAX_INFO_LEN];
 } SUModelNum;
 
 typedef struct {
-		char chr[MAX_INFO_LEN];         /**< Device software version strings*/
+		char chr[MAX_INFO_LEN];
 } SUVersion;
-
 
 extern int SU_Base_GetDevID(SUDevID *devID);
 extern int SU_Base_GetModelNumber(SUModelNum *modelNum);
 extern int SU_Base_GetVersion(SUVersion *version);
 
 typedef struct {
-		char aVersion[64];      /**< IMP Version */
+		char aVersion[64];
 } IMPVersion;
 
 extern int IMP_System_GetVersion(IMPVersion *pstVersion);

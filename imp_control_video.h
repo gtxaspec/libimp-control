@@ -6,52 +6,6 @@
 #include "include/imp_osd.h"
 #include "include/imp_common.h"
 
-char *Flip(char *tokenPtr);
-char *Contrast(char *tokenPtr);
-char *Brightness(char *tokenPtr);
-char *Saturation(char *tokenPtr);
-char *Sharpness(char *tokenPtr);
-char *AEComp(char *tokenPtr);
-char *AEItMax(char *tokenPtr);
-char *Sinter(char *tokenPtr);
-char *Temper(char *tokenPtr);
-char *DPC(char *tokenPtr);
-char *DRC(char *tokenPtr);
-char *HiLight(char *tokenPtr);
-char *AGain(char *tokenPtr);
-char *DGain(char *tokenPtr);
-char *Hue(char *tokenPtr);
-char *Mode(char *tokenPtr);
-char *Flicker(char *tokenPtr);
-char *Gamma(char *tokenPtr);
-char *SetAutoZoom(char *tokenPtr);
-char *FrontCrop(char *tokenPtr);
-char *Mask(char *tokenPtr);
-char *WhiteBalance(char *tokenPtr);
-char *SensorFPS(char *tokenPtr);
-char *BacklightComp(char *tokenPtr);
-char *GetEVAttributes(char *tokenPtr);
-char *GetAeLuma(char *tokenPtr);
-char *AwbCt(char *tokenPtr);
-char *GetAFMetrics(char *tokenPtr);
-char *GetTotalGain(char *tokenPtr);
-char *DefogStrength(char *tokenPtr);
-char *AeMin(char *tokenPtr);
-char *GetAeAttr(char *tokenPtr);
-char *SetAndGetFrameRate(char *tokenPtr);
-char *SetAndGetRcMode(char *tokenPtr);
-char *SetAndGetGopAttr(char *tokenPtr);
-char *SetBitRate(char *tokenPtr);
-char *SetGopLength(char *tokenPtr);
-char *SetChnQp(char *tokenPtr);
-char *SetChnQpBounds(char *tokenPtr);
-char *SetChnQpIPDelta(char *tokenPtr);
-char *GetOSDRegionAttributes(char *tokenPtr);
-char *GetOSDGroupRegionAttributes(char *tokenPtr);
-
-static char response[1024]; // Buffer for response message
-
-// These functions do not exist on <T31
 // AE Max parameters.
 extern int IMP_ISP_Tuning_SetAe_IT_MAX(unsigned int it_max);
 extern int IMP_ISP_Tuning_GetAE_IT_MAX(unsigned int *it_max);

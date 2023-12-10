@@ -12,29 +12,9 @@
 #include <sys/socket.h> // For socket functions
 #include <unistd.h>     // For close, read, write, unsetenv
 #include "version.h"    // git VERSION
-
-// Constants
-static const unsigned short CommandPort = 4000;
-static const int MaxConnect = 255;
-static const int BufferSize = 256;
-
-// Global variables for pipe communication
-static int SelfPipe[2];
-
-// Function declarations for external modules
-extern char *IMPTune(int fd, char *tokenPtr);
-
-// Structure for command handling
-struct CommandTableSt {
-	const char *cmd;
-	char * (*func)(int, char *);
-};
-
-// Command handling table
-struct CommandTableSt CommandTable[] = {
-	{ "imp_control", &IMPTune },
-	{ NULL, NULL } // End of table marker
-};
+#include "command.h"
+#include "include/imp_log.h"
+#include "imp_control_util.h"
 
 // Function to send command response
 void CommandResponse(int fd, const char *res) {
@@ -56,13 +36,13 @@ static void *CommandThread(void *arg) {
 	// Socket setup
 	int listenSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenSocket < 0) {
-		fprintf(stderr, "socket error: %s\n", strerror(errno));
+		IMP_LOG_ERR(TAG, "socket error: %s\n", strerror(errno));
 		return NULL;
 	}
 
 	int sock_optval = 1;
 	if (setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &sock_optval, sizeof(sock_optval)) == -1) {
-		fprintf(stderr, "setsockopt error: %s\n", strerror(errno));
+		IMP_LOG_ERR(TAG, "setsockopt error: %s\n", strerror(errno));
 		close(listenSocket);
 		return NULL;
 	}
@@ -74,13 +54,13 @@ static void *CommandThread(void *arg) {
 	};
 
 	if (bind(listenSocket, (struct sockaddr *)&saddr, sizeof(saddr)) < 0) {
-		fprintf(stderr, "bind error: %s\n", strerror(errno));
+		IMP_LOG_ERR(TAG, "bind error: %s\n", strerror(errno));
 		close(listenSocket);
 		return NULL;
 	}
 
 	if (listen(listenSocket, MaxConnect) == -1) {
-		fprintf(stderr, "listen error: %s\n", strerror(errno));
+		IMP_LOG_ERR(TAG, "listen error: %s\n", strerror(errno));
 		close(listenSocket);
 		return NULL;
 	}
@@ -99,7 +79,7 @@ static void *CommandThread(void *arg) {
 		fd_set checkFDs = targetFd;
 		int selectResult = select(maxFd + 1, &checkFDs, NULL, NULL, NULL);
 		if (selectResult == -1) {
-			fprintf(stderr, "select error: %s\n", strerror(errno));
+			IMP_LOG_ERR(TAG, "select error: %s\n", strerror(errno));
 			continue;
 		}
 
@@ -135,7 +115,7 @@ static void *CommandThread(void *arg) {
 				socklen_t len = sizeof(dstAddr);
 				int newSocket = accept(fd, (struct sockaddr *)&dstAddr, &len);
 				if (newSocket < 0) {
-					fprintf(stderr, "accept error\n");
+					IMP_LOG_ERR(TAG, "accept error\n");
 					continue;
 				}
 
@@ -188,7 +168,7 @@ static void *CommandThread(void *arg) {
 					send(fd, error_msg, strlen(error_msg) + 1, 0);
 					close(fd);
 					FD_CLR(fd, &targetFd);
-					printf("LIBIMP_CONTROL: Unknown command received: %s\n", command);
+					IMP_LOG_ERR(TAG,"Unknown command received: %s\n", command);
 				}
 			}
 		}
@@ -208,16 +188,17 @@ const char* IMP_System_GetCPUInfo() {
 		// Dynamically look up the original IMP_System_GetCPUInfo function
 		original_IMP_System_GetCPUInfo = dlsym(RTLD_NEXT, "IMP_System_GetCPUInfo");
 		if (!original_IMP_System_GetCPUInfo) {
-			fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
+			IMP_LOG_ERR(TAG, "Error in `dlsym`: %s\n", dlerror());
 			return NULL; // return NULL as the function expects a string return type
 		}
 	}
 
 	// Start our thread prior to the original function
 	printf("LIBIMP_CONTROL Version: %s\n", VERSION);
+	IMP_LOG_INFO(TAG,"Version: %s\n", VERSION);
 
 	if (pipe(SelfPipe) != 0) {
-		fprintf(stderr, "pipe creation error\n");
+		IMP_LOG_ERR(TAG, "pipe creation error\n");
 		return NULL;
 	}
 
@@ -229,7 +210,7 @@ const char* IMP_System_GetCPUInfo() {
 
 	pthread_t thread;
 	if (pthread_create(&thread, NULL, CommandThread, NULL) != 0) {
-		fprintf(stderr, "thread creation error\n");
+		IMP_LOG_ERR(TAG, "thread creation error\n");
 		return NULL;
 	}
 
