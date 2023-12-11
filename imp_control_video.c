@@ -5,6 +5,8 @@
 #include "imp_control_video.h"
 #include "imp_control_util.h"
 #include "include/imp_encoder.h"
+#include "include/imp_log.h"
+#include <dlfcn.h>      // For dlsym, dlerror
 
 char *Flip(char *tokenPtr) {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
@@ -264,21 +266,21 @@ char *BacklightComp(char *tokenPtr) {
 }
 
 char *DefogStrength(char *tokenPtr) {
-    #ifndef CONFIG_T20
-    char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-    uint8_t ratio;
-    if (!p) {
-        int32_t getRet = IMP_ISP_Tuning_GetDefog_Strength(&ratio);
-        if (getRet) return "error";
-        sprintf(response, "%u", ratio);
-        return response;
-    }
-    ratio = (uint8_t)atoi(p);
-    int32_t setRet = IMP_ISP_Tuning_SetDefog_Strength(&ratio);
-    return RESULT(setRet, p);
-    #else
-    return "not supported on >T20";
-    #endif
+	#ifndef CONFIG_T20
+	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	uint8_t ratio;
+	if (!p) {
+		int32_t getRet = IMP_ISP_Tuning_GetDefog_Strength(&ratio);
+		if (getRet) return "error";
+		sprintf(response, "%u", ratio);
+		return response;
+	}
+	ratio = (uint8_t)atoi(p);
+	int32_t setRet = IMP_ISP_Tuning_SetDefog_Strength(&ratio);
+	return RESULT(setRet, p);
+	#else
+	return "not supported on >T20";
+	#endif
 }
 
 char *SetAndGetGopAttr(char *tokenPtr) {
@@ -291,11 +293,11 @@ char *SetAndGetGopAttr(char *tokenPtr) {
 
 if (p != NULL && strcmp(p, "-h") == 0)
 {
-    return 
-        "Usage: gopattr [encChn] [gopLength]\n"
-        "Parameters:\n"
-        "  encChn: Encoder Channel number to set the GOP attribute for.\n"
-        "  gopLength: Length of the Group of Pictures (GOP).";
+	return
+		"Usage: gopattr [encChn] [gopLength]\n"
+		"Parameters:\n"
+		"  encChn: Encoder Channel number to set the GOP attribute for.\n"
+		"  gopLength: Length of the Group of Pictures (GOP).";
 }
 
 	encChn = atoi(p);
@@ -369,13 +371,13 @@ char *SensorFPS(char *tokenPtr) {
 	// Parse parameters from the input string
 	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	if (p != NULL && strcmp(p, "-h") == 0)
-{
-    return 
-        "Usage: sensorfps [fps_num]\n"
-        "Parameter:\n"
-        "  fps_num: The frame rate number to set for the sensor.\n"
-        "           It specifies the number of frames per second.";
-}
+	{
+	return
+		"Usage: sensorfps [fps_num]\n"
+		"Parameter:\n"
+		"  fps_num: The frame rate number to set for the sensor.\n"
+		"           It specifies the number of frames per second.";
+	}
 
 	while (p != NULL) {
 		if (parsedFields == 0) {
@@ -420,11 +422,11 @@ char *SetAndGetFrameRate(char *tokenPtr) {
 
 if (p != NULL && strcmp(p, "-h") == 0)
 {
-    return 
-        "Usage: framerate [encChn] [frmRateNum] <frmRateDen>\n"
-        "Parameters:\n"
-        "  encChn: Encoder Channel number to set the framerate for.\n"
-        "  frmRateNum: Desired frame rate number.\n"
+	return
+		"Usage: framerate [encChn] [frmRateNum] <frmRateDen>\n"
+		"Parameters:\n"
+		"  encChn: Encoder Channel number to set the framerate for.\n"
+		"  frmRateNum: Desired frame rate number.\n"
 		"  frmRateDen: Frame rate number denominator.  This value may be omited and the default value of 1 will be used.";
 }
 	encChn = atoi(p);
@@ -979,6 +981,13 @@ char *GetOSDRegionAttributes(char *tokenPtr) {
 		return "Error: Region handle not provided.";
 	}
 
+	if (p != NULL && strcmp(p, "-h") == 0) {
+		return "Usage: GetOSDRegionAttributes [RegionHandle]\n"
+			"RegionHandle: The handle identifier of the OSD region.\n"
+			"Description: Retrieves attributes for a specified OSD region, including type, rectangle dimensions, and format.\n"
+			"Returns: A detailed description of the OSD region's attributes (Type, Rectangle coordinates and dimensions, Format), or an error message if the region handle is not provided or invalid.";
+	}
+
 	IMPRgnHandle handle = atoi(p);
 
 	// Get the region attributes
@@ -1005,6 +1014,15 @@ char *GetOSDGroupRegionAttributes(char *tokenPtr) {
 	if (pHandle == NULL) {
 		return "Error: Region handle not provided.";
 	}
+
+	if (pHandle != NULL && strcmp(pHandle, "-h") == 0) {
+	return "Usage: GetOSDGroupRegionAttributes [RegionHandle] [GroupNumber]\n"
+		   "RegionHandle: The handle identifier of the OSD region.\n"
+		   "GroupNumber: The number identifier of the OSD group.\n"
+		   "Description: Retrieves attributes for a specified OSD region within a specific group, including visibility, position, scaling, alpha settings, and layer.\n"
+		   "Returns: A detailed description of the OSD group region's attributes (Visibility, Offset Position, Scaling, Alpha Settings, Layer), or an error message if the region handle or group number is not provided or invalid.";
+	}
+
 	IMPRgnHandle handle = atoi(pHandle);
 
 	// Extract the group number from the token
@@ -1057,3 +1075,257 @@ char *Gamma(char *tokenPtr) {
 }
 
 // END GET ONLY
+
+char *setOSDalpha(char *tokenPtr) {
+	int grpNum = 0;
+	int handle = 0;
+	// Parse input arguments for alpha_en
+	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p == NULL) return "Error: Alpha enable not specified";
+
+	if (p != NULL && strcmp(p, "-h") == 0) {
+		return "Usage: setOSDalpha [alpha_en] [fg_alpha]\n"
+			"alpha_en: Alpha enable flag (0 for disable, 1 for enable).\n"
+			"fg_alpha: Foreground alpha value (0-255).\n"
+			"Description: Sets the alpha attributes for a specified OSD group region. This includes enabling/disabling alpha and setting the foreground alpha level.\n"
+			"Note: Background alpha is set to 0 by default. The function assumes that region handle and group number are predefined.\n"
+			"Returns: Confirmation message on successful setting of attributes, or an error message in case of failure.";
+	}
+
+	int alpha_en = atoi(p);
+
+	// Parse input arguments for fg_alpha
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	//if (p == NULL) return "Error: Foreground alpha not specified";
+	int fg_alpha = atoi(p); // Parse as decimal value
+
+	// Initialize OSD group region attributes
+	IMPOSDGrpRgnAttr grpRgnAttr;
+	grpRgnAttr.show = 1; // Set to show the region
+	grpRgnAttr.gAlphaEn = alpha_en; // Alpha enable
+	grpRgnAttr.fgAlhpa = fg_alpha;  // Foreground Alpha (0-255)
+	grpRgnAttr.bgAlhpa = 0;  // Background Alpha (0-255)
+	grpRgnAttr.offPos = (IMPPoint){0, 0}; // Set offset position
+	grpRgnAttr.scalex = 0; // No scaling in x
+	grpRgnAttr.scaley = 0; // No scaling in y
+	grpRgnAttr.layer = 0; // Set display layer
+
+	// Assuming handle and grpNum are defined elsewhere and accessible here
+	 int ret = IMP_OSD_SetGrpRgnAttr(handle, grpNum, &grpRgnAttr);
+	if (ret != 0) {
+		return "Failed to set OSD group region attributes";
+	}
+
+	return "OSD group region attributes set successfully";
+}
+
+char *showOSD(char *tokenPtr) {
+	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p == NULL) return "Error: Show/Hide flag not specified";
+
+	if (p != NULL && strcmp(p, "-h") == 0) {
+		return "Usage: showOSD [flag]\n"
+			"flag: '1' or 'show' to display the OSD, '0' or 'hide' to hide the OSD.\n"
+			"Description: Controls the visibility of the OSD (On-Screen Display) in a specific OSD group. The function sets the OSD to be visible or hidden based on the given flag.\n"
+			"Note: This function assumes that the OSD group number and region handle are predefined.\n"
+			"Returns: Confirmation message on successful change of visibility, or an error message in case of failure or invalid input.";
+	}
+
+	int showFlag = 0;
+	if (strcmp(p, "1") == 0 || strcmp(p, "show") == 0) {
+		showFlag = 1; // Show OSD
+	} else if (strcmp(p, "0") == 0 || strcmp(p, "hide") == 0) {
+		showFlag = 0; // Hide OSD
+	} else {
+		return "Error: Invalid Show/Hide flag";
+	}
+
+	int grpNum = 0;
+	int handle = 0;
+
+	// Set the OSD group region attributes
+	int ret = IMP_OSD_ShowRgn(handle, grpNum, showFlag);
+	if (ret != 0) {
+		return "Failed to set OSD group region attributes";
+	}
+
+	return "OSD group region attributes set successfully";
+}
+
+char *OSDTest(char *tokenPtr)
+{
+	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	int grpNum = 0;
+	int handle = 0;
+	int showFlag = 0;
+	int showFlag1 = 1;
+
+	if (p != NULL && strcmp(p, "-1") == 0)
+	{
+		IMP_OSD_Stop(grpNum);
+		return "ok stop osd";
+	}
+
+	if (p != NULL && strcmp(p, "-2") == 0)
+	{
+		IMP_OSD_Start(grpNum);
+		return "ok start osd";
+	}
+
+	if (p != NULL && strcmp(p, "-3") == 0)
+	{
+		IMP_OSD_ShowRgn(handle, grpNum, showFlag);
+		return "ok showflag disable osd";
+	}
+
+	if (p != NULL && strcmp(p, "-4") == 0)
+	{
+		IMP_OSD_ShowRgn(handle, grpNum, showFlag1);
+		return "ok showflag enable osd";
+	}
+
+	if (p != NULL && strcmp(p, "-5") == 0)
+	{
+		return "ok";
+	}
+		if (p != NULL && strcmp(p, "-0") == 0)
+	{
+	// Initialize OSD group region attributes
+	IMPOSDGrpRgnAttr grpRgnAttr;
+
+	IMPOSDRgnAttr rAttrFont;
+	rAttrFont.type = OSD_REG_PIC;
+	rAttrFont.rect.p0.x = 10;
+	rAttrFont.rect.p0.y = 10;
+	rAttrFont.rect.p1.x = rAttrFont.rect.p0.x + 20 - 1;
+	rAttrFont.rect.p1.y = rAttrFont.rect.p0.y + 20 - 1;
+
+
+	grpRgnAttr.show = 1; // Set to show the region
+	grpRgnAttr.offPos = (IMPPoint){-200, -200}; // Set offset position
+	grpRgnAttr.scalex = 0; // No scaling in x
+	grpRgnAttr.scaley = 0; // No scaling in y
+	grpRgnAttr.gAlphaEn = 1; // Enable Alpha
+	grpRgnAttr.fgAlhpa = 128; // Foreground Alpha (0-255)
+	grpRgnAttr.bgAlhpa = 128; // Background Alpha (0-255)
+	grpRgnAttr.layer = 0; // Set display layer
+	// Set the OSD group region attributes
+	int ret = IMP_OSD_SetRgnAttr(handle, &rAttrFont);
+
+	//int ret = IMP_OSD_SetGrpRgnAttr(handle, grpNum, &grpRgnAttr);
+	if (ret != 0) {
+		return "Failed to set OSD group region attributes";
+	}
+
+	return "OSD group region attributes set successfully";
+	}
+}
+
+// OSD STAGING
+
+// Global variables for new coordinates, width, height and a flag to check if they are set
+int newTopLeftX = -1;
+int newTopLeftY = -1;
+int newWidth = -1;
+int newHeight = -1;
+int coordinatesSet = 0; // Flag to indicate new coordinates are set
+
+// External handle
+extern IMPRgnHandle handle;
+
+// Define a pointer for the original function
+int (*original_IMP_OSD_SetRgnAttr)(IMPRgnHandle, IMPOSDRgnAttr*);
+
+// Function to set new top-left coordinates (x, y) and size (width, height)
+void setNewCoordinatesAndSize(int topLeftX, int topLeftY, int width, int height) {
+	newTopLeftX = topLeftX;
+	newTopLeftY = topLeftY;
+	newWidth = width;
+	newHeight = height;
+	coordinatesSet = 1; // Indicate that new coordinates and size are set
+	IMP_LOG_INFO(TAG, "New Coordinates and Size Set: Top-Left (x: %d, y: %d), Size (w: %d, h: %d)\n",
+		   newTopLeftX, newTopLeftY, newWidth, newHeight);
+}
+
+// Hook function
+int IMP_OSD_SetRgnAttr(IMPRgnHandle handle, IMPOSDRgnAttr *prAttr) {
+	// Dynamically find the original function if not already found
+	if (!original_IMP_OSD_SetRgnAttr) {
+		original_IMP_OSD_SetRgnAttr = dlsym(RTLD_NEXT, "IMP_OSD_SetRgnAttr");
+		if (!original_IMP_OSD_SetRgnAttr) {
+			IMP_LOG_ERR(TAG, "Error in `dlsym`: %s\n", dlerror());
+			return -1;
+		}
+	}
+
+	if (coordinatesSet && prAttr != NULL) {
+		// Temporarily save original coordinates and size
+		int origX = prAttr->rect.p0.x;
+		int origY = prAttr->rect.p0.y;
+		int origWidth = prAttr->rect.p1.x - origX + 1;
+		int origHeight = prAttr->rect.p1.y - origY + 1;
+
+		// Set new coordinates and size
+		prAttr->rect.p0.x = newTopLeftX;
+		prAttr->rect.p0.y = newTopLeftY;
+		//prAttr->rect.p1.x = newTopLeftX + newWidth - 1;
+		//prAttr->rect.p1.y = newTopLeftY + newHeight - 1;
+
+		prAttr->rect.p1.x = newTopLeftX + newWidth;
+		prAttr->rect.p1.y = newTopLeftY + newHeight;
+		//rAttrFont.rect.p1.x = rAttrFont.rect.p0.x + 20 * OSD_REGION_WIDTH - 1;
+		//rAttrFont.rect.p1.y = rAttrFont.rect.p0.y + OSD_REGION_HEIGHT - 1;
+
+		// Call the original function with modified coordinates and size
+		int result = original_IMP_OSD_SetRgnAttr(handle, prAttr);
+
+		// Restore original coordinates and size
+		/*
+		prAttr->rect.p0.x = origX;ok stop
+		prAttr->rect.p0.y = origY;
+		prAttr->rect.p1.x = origX + origWidth - 1;
+		prAttr->rect.p1.y = origY + origHeight - 1;
+		*/
+		return result;
+	}
+
+	// Call the original function without modification
+	return original_IMP_OSD_SetRgnAttr(handle, prAttr);
+}
+
+char *setOSDpos(char *tokenPtr) {
+
+	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+
+	// Check for help request
+	if (p != NULL && strcmp(p, "-h") == 0) {
+		return "Usage: setOSDpos [x] [y] [width] [height]\n"
+			   "x: X-coordinate for the top-left corner of the OSD region\n"
+			   "y: Y-coordinate for the top-left corner of the OSD region\n"
+			   "width: Width of the OSD region\n"
+			   "height: Height of the OSD region\n"
+			   "Description: Sets the position and size of the OSD (On-Screen Display) region. The function updates the OSD region's top-left coordinates and its dimensions.\n"
+			   "Note: This function will schedule the update of the OSD region's position and size. The actual update is performed asynchronously.\n"
+			   "Returns: Confirmation message indicating that the position and size update is scheduled, or an error message in case of missing parameters.";
+	}
+
+	if (p == NULL) return "Error: x coordinate not specified";
+	int x = atoi(p);
+
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p == NULL) return "Error: y coordinate not specified";
+	int y = atoi(p);
+
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p == NULL) return "Error: width not specified";
+	int w = atoi(p);
+
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p == NULL) return "Error: height not specified";
+	int h = atoi(p);
+
+	// Set the new top-left coordinates and size
+	setNewCoordinatesAndSize(x, y, w, h);
+
+	return "OSD region position and size update scheduled";
+}

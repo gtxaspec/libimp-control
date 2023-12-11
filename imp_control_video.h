@@ -257,8 +257,13 @@ typedef struct {
 
 extern int IMP_ISP_Tuning_GetAeAttr(IMPISPAEAttr *ae);
 
+/*
 extern int IMP_OSD_GetRgnAttr(IMPRgnHandle handle, IMPOSDRgnAttr *prAttr);
 extern int IMP_OSD_GetGrpRgnAttr(IMPRgnHandle handle, int grpNum, IMPOSDGrpRgnAttr *pgrAttr);
+extern int IMP_OSD_ShowRgn(IMPRgnHandle handle, int grpNum, int showFlag);
+extern int IMP_OSD_Start(int grpNum);
+extern int IMP_OSD_Stop(int grpNum);
+*/
 
 /*
 todo:

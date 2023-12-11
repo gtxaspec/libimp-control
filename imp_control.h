@@ -62,6 +62,11 @@ char *GetModelFamily();
 char *GetSysVersion();
 char *GetIMPVersion(char *tokenPtr);
 char *GetCPUInfo(char *tokenPtr);
+char *setOSDalpha(char *tokenPtr);
+char *OSDTest(char *tokenPtr);
+char *showOSD(char *tokenPtr);
+char *setOSDpos(char *tokenPtr);
+
 
 static char *ShowHelp(char *tokenPtr) {
     static char response[] =
@@ -83,11 +88,11 @@ static char *ShowHelp(char *tokenPtr) {
         "backlightcomp         drc                    getgamma             getcpuinfo\n"
         "defogstrength         hilight                getevattr            getdeviceid\n"
         "framerate             again                  getaeluma            getmodelfamily\n"
-        "gopattr               dgain                  getawbct             help\n"
-        "setbitrate            hue                    getafmetrics         full_demo\n"
-        "setgoplength          ispmode                gettotalgain\n"
-        "setqp                 flicker                getaeattr\n"
-        "whitebalance          whitebalance           getimpversion";
+        "gopattr               dgain                  getawbct             setosdalpha\n"
+        "setbitrate            hue                    getafmetrics         setosdshow\n"
+        "setgoplength          ispmode                gettotalgain         setosdpos\n"
+        "setqp                 flicker                getaeattr            help\n"
+        "whitebalance          whitebalance           getimpversion        full_demo";
     return response;
 }
 // split into channel group future.
@@ -159,6 +164,11 @@ static struct CommandTableSt imp_ControlTable[] = {
 	{ "setqp", &SetChnQp },
 	{ "setqpbounds", &SetChnQpBounds },
 	{ "setqpipdelta", &SetChnQpIPDelta },
+	{ "setosdalpha", &setOSDalpha},
+	{ "setosdshow", &showOSD},
+	{ "setosdpos", &setOSDpos},
+	{ "osdtest", &OSDTest},
+
 };
 
 #endif // IMP_CONTROL_H
