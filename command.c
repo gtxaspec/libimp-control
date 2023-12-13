@@ -119,6 +119,13 @@ static void *CommandThread(void *arg) {
 					continue;
 				}
 
+				// Accept conneections only from localhost
+				if(strcmp(inet_ntoa(dstAddr.sin_addr), "127.0.0.1")) {
+					fprintf(stderr, "Rejected request from %s\n", inet_ntoa(dstAddr.sin_addr));
+					close(newSocket);
+					 continue;
+				}
+
 				// Set socket to non-blocking mode
 				int flags = fcntl(newSocket, F_GETFL, 0);
 				fcntl(newSocket, F_SETFL, O_NONBLOCK | flags);
