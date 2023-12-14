@@ -826,7 +826,7 @@ char *Mask(char *tokenPtr) {
 
 	char *p = strtok_r(tokenPtr, " \t\r\n", &tokenPtr);
 	if (!p) return DEBUG_TEXT("Usage: <encChn> <rcMode> [<mode specific parameters>]\n"
-				   "rcModes:\n"SetBitRate
+				   "rcModes:\n"
 				   "0: FIXQP: <iInitialQP>\n"
 				   "2: CBR: <iInitialQP> <iMinQP> <iMaxQP> <bitrate>\n"
 				   "3: VBR: <iInitialQP> <iMinQP> <iMaxQP> <bitrate> <maxBitRate>\n"
@@ -1171,23 +1171,20 @@ char *setOSDalpha(char *tokenPtr) {
 	int handle = 0;
 	// Parse input arguments for alpha_en
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-	if (p == NULL) return DEBUG_TEXT("Error: Alpha enable not specified");
+
+	// Parse input arguments for fg_alpha
+	if (p == NULL) return DEBUG_TEXT("Error: Foreground alpha not specified");
 
 	if (p != NULL && strcmp(p, "-h") == 0) {
 		return HELP_MESSAGE_SETOSDALPHA;
-		}
+	}
 
-	int alpha_en = atoi(p);
-
-	// Parse input arguments for fg_alpha
-	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-	//if (p == NULL) return "Error: Foreground alpha not specified";
 	int fg_alpha = atoi(p); // Parse as decimal value
 
 	// Initialize OSD group region attributes
 	IMPOSDGrpRgnAttr grpRgnAttr;
 	grpRgnAttr.show = 1; // Set to show the region
-	grpRgnAttr.gAlphaEn = alpha_en; // Alpha enable
+	grpRgnAttr.gAlphaEn = 1; // Alpha enable
 	grpRgnAttr.fgAlhpa = fg_alpha;  // Foreground Alpha (0-255)
 	grpRgnAttr.bgAlhpa = 0;  // Background Alpha (0-255)
 	grpRgnAttr.offPos = (IMPPoint){0, 0}; // Set offset position
@@ -1247,14 +1244,13 @@ extern IMPRgnHandle handle;
 int (*original_IMP_OSD_SetRgnAttr)(IMPRgnHandle, IMPOSDRgnAttr*);
 
 // Function to set new top-left coordinates (x, y) and size (width, height)
-void setNewCoordinatesAndSize(int topLeftX, int topLeftY, int width, int height) {
+void setNewCoordinatesAndSize(int topLeftX, int topLeftY) {
 	newTopLeftX = topLeftX;
 	newTopLeftY = topLeftY;
-	newWidth = width;
-	newHeight = height;
+
 	coordinatesSet = 1; // Indicate that new coordinates and size are set
-	IMP_LOG_INFO(TAG, "New Coordinates and Size Set: Top-Left (x: %d, y: %d), Size (w: %d, h: %d)\n",
-		   newTopLeftX, newTopLeftY, newWidth, newHeight);
+	IMP_LOG_INFO(TAG, "New Coordinates and Size Set: Top-Left (x: %d, y: %d)\n",
+		   newTopLeftX, newTopLeftY);
 }
 
 // Hook function
@@ -1278,24 +1274,13 @@ int IMP_OSD_SetRgnAttr(IMPRgnHandle handle, IMPOSDRgnAttr *prAttr) {
 		// Set new coordinates and size
 		prAttr->rect.p0.x = newTopLeftX;
 		prAttr->rect.p0.y = newTopLeftY;
-		//prAttr->rect.p1.x = newTopLeftX + newWidth - 1;
-		//prAttr->rect.p1.y = newTopLeftY + newHeight - 1;
 
-		prAttr->rect.p1.x = newTopLeftX + newWidth;
-		prAttr->rect.p1.y = newTopLeftY + newHeight;
-		//rAttrFont.rect.p1.x = rAttrFont.rect.p0.x + 20 * OSD_REGION_WIDTH - 1;
-		//rAttrFont.rect.p1.y = rAttrFont.rect.p0.y + OSD_REGION_HEIGHT - 1;
+		prAttr->rect.p1.x = newTopLeftX + origWidth - 1;
+		prAttr->rect.p1.y = newTopLeftY + origHeight - 1;
 
 		// Call the original function with modified coordinates and size
 		int result = original_IMP_OSD_SetRgnAttr(handle, prAttr);
 
-		// Restore original coordinates and size
-		/*
-		prAttr->rect.p0.x = origX;ok stop
-		prAttr->rect.p0.y = origY;
-		prAttr->rect.p1.x = origX + origWidth - 1;
-		prAttr->rect.p1.y = origY + origHeight - 1;
-		*/
 		return result;
 	}
 
@@ -1310,7 +1295,7 @@ char *setOSDpos(char *tokenPtr) {
 	// Check for help request
 	if (p != NULL && strcmp(p, "-h") == 0) {
 		return HELP_MESSAGE_SETOSD_POS;
-			}
+	}
 
 	if (p == NULL) return "Error: x coordinate not specified";
 	int x = atoi(p);
@@ -1319,16 +1304,8 @@ char *setOSDpos(char *tokenPtr) {
 	if (p == NULL) return "Error: y coordinate not specified";
 	int y = atoi(p);
 
-	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-	if (p == NULL) return "Error: width not specified";
-	int w = atoi(p);
-
-	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-	if (p == NULL) return "Error: height not specified";
-	int h = atoi(p);
-
 	// Set the new top-left coordinates and size
-	setNewCoordinatesAndSize(x, y, w, h);
+	setNewCoordinatesAndSize(x, y);
 
 	return "OSD region position and size update scheduled";
 }
