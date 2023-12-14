@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "imp_control_help.h"
 #include "imp_control_video.h"
 #include "imp_control_util.h"
 #include "include/imp_log.h"
@@ -69,19 +70,19 @@ void rampControlValue(const char *controlName) {
 	} else if (strcmp(controlName, "dpc") == 0) {
 		setFunctionUint = &IMP_ISP_Tuning_SetDPC_Strength;
 #else
-	IMP_LOG_ERR(TAG, "Not supported on this platform");
+	IMP_LOG_ERR(TAG, HELP_MESSAGE_PLATFORM);
 #endif
 	} else if (strcmp(controlName, "drc") == 0) {
 #ifndef CONFIG_T20
 		setFunctionUint = &IMP_ISP_Tuning_SetDRC_Strength;
 #else
-	IMP_LOG_ERR(TAG, "Not supported on this platform");
+	IMP_LOG_ERR(TAG, HELP_MESSAGE_PLATFORM);
 #endif
 	} else if (strcmp(controlName, "hue") == 0) {
 #ifndef CONFIG_T20
 		setFunctionChar = &IMP_ISP_Tuning_SetBcshHue;
 #else
-	IMP_LOG_ERR(TAG, "Not supported on this platform");
+	IMP_LOG_ERR(TAG, HELP_MESSAGE_PLATFORM);
 #endif
 	}
 
@@ -227,12 +228,7 @@ char* fullDemo(char *tokenPtr) {
 
 	if (p != NULL && strcmp(p, "-h") == 0)
 {
-	return
-		"Usage: full_demo\n"
-		"Description:\n"
-		"  This command initiates a full demonstration mode, showcasing\n"
-		"  the capabilities and features of the system. It does not require\n"
-		"  any additional parameters.";
+	return HELP_MESSAGE_FULLDEMO;
 }
 	IMP_LOG_INFO(TAG, "Starting Full Demo");
 	const char *controls[] = {"brightness", "contrast", "saturation", "sharpness", "sinter", "temper", "aecomp", "dpc", "drc", "hue"};
@@ -258,5 +254,6 @@ char* fullDemo(char *tokenPtr) {
 		rampControlValue(controls[i]);
 		IMP_LOG_INFO(TAG, "Ramping %s complete\n", controls[i]);
 	}
+	IMP_LOG_ERR(TAG, "Demo complete, restart for best performance");
 	return "Demo complete, restart for best performance.";
 }

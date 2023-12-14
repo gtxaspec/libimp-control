@@ -12,6 +12,12 @@
     #define RESULT(RES, P) NULL
 #endif
 
+#ifdef DEBUG
+    #define DEBUG_TEXT(text) (text)
+#else
+    #define DEBUG_TEXT(text) ""
+#endif
+
 static char response[MAX_INFO_LEN]; // Buffer for response message
 
 typedef union {

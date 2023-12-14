@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "imp_control_audio.h"
+#include "imp_control_help.h"
 #include "imp_control_util.h"
 
 // AI
@@ -11,15 +12,11 @@ char *HighPassFilter(char *tokenPtr) {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 if (p != NULL && strcmp(p, "-h") == 0)
 {
-	return 
-		"Usage: aihpf [0/1]\n"
-		"Option:\n"
-		"  0 - Turn off High Pass Filter\n"
-		"  1 - Turn on High Pass Filter";
+	return HELP_MESSAGE_HPF;
 }
 	int res = -1;
 	if (p == NULL) {
-			return "Missing parameter";
+		return DEBUG_TEXT("Missing parameter");
 	}
 	int value = atoi(p);
 	if (value == 0) {
@@ -38,16 +35,10 @@ char *AutoGainControl(char *tokenPtr) {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	if (p != NULL && strcmp(p, "-h") == 0)
 {
-	return 
-		"Usage: aiagc [mode] [compGaindB]\n"
-		"Options:\n"
-		"  mode - Operating mode of AGC (Automatic Gain Control)\n"
-		"         0: Off\n"
-		"         Any other number: Gain Level\n"
-		"  compGaindB - Compensation gain in decibels (dB), used when mode is not 0";
+	return HELP_MESSAGE_AOAGC;
 }
 	if (p == NULL) {
-			return "Missing parameter";
+			return DEBUG_TEXT("Missing parameter");
 	}
 	int res = -1;
 	int targetLevelDbfs = atoi(p);
@@ -71,14 +62,10 @@ char *NoiseSuppression(char *tokenPtr) {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	if (p != NULL && strcmp(p, "-h") == 0)
 {
-	return 
-		"Usage: ains [-1/0-3]\n"
-		"Parameter:\n"
-		"  -1: Disable Noise Suppression\n"
-		"  0-3: Set Noise Suppression Level (0 being the lowest and 3 the highest)";
+	return HELP_MESSAGE_AINS;
 }
 	if (p == NULL) {
-			return "Missing parameter";
+			return DEBUG_TEXT("Missing parameter");
 	}
 	int level = atoi(p);
 	int res = -1;
@@ -99,14 +86,10 @@ char *EchoCancellation(char *tokenPtr) {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	if (p != NULL && strcmp(p, "-h") == 0)
 {
-	return 
-		"Usage: aiaec [0/1]\n"
-		"Parameter:\n"
-		"  0: Disable Automatic Echo Cancellation (AEC)\n"
-		"  1: Enable Automatic Echo Cancellation (AEC)";
+	return HELP_MESSAGE_AIEC;
 }
 	if (p == NULL) {
-			return "Missing parameter";
+			return DEBUG_TEXT("Missing parameter");
 	}
 	int state = atoi(p);
 	int res = -1;
@@ -125,12 +108,7 @@ char *Volume(char *tokenPtr) {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 if (p != NULL && strcmp(p, "-h") == 0)
 {
-	return 
-		"Usage: aivol [-30-120]\n"
-		"Parameter:\n"
-		"  -30 to 120: Set the Audio Input Volume Level.\n"
-		"              -30 represents the lowest volume level,\n"
-		"              120 represents the highest volume level.";
+	return HELP_MESSAGE_AIVOL;
 }
 	if(!p) {
 		int vol;
@@ -147,12 +125,7 @@ char *Gain(char *tokenPtr) {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	if (p != NULL && strcmp(p, "-h") == 0)
 {
-	return 
-		"Usage: aigain [0-31]\n"
-		"Parameter:\n"
-		"  0-31: Set the Audio Input Gain level.\n"
-		"        0 represents the minimum gain level,\n"
-		"        31 represents the maximum gain level.";
+	return HELP_MESSAGE_AIGAIN;
 }
 	if(!p) {
 		int gain;
@@ -170,11 +143,7 @@ char *AlcGain(char *tokenPtr) {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	if (p != NULL && strcmp(p, "-h") == 0)
 {
-	return 
-		"Usage: aialc [0-7]\n"
-		"Parameter:\n"
-		"  0-7: Set the Automatic Input Level Control (AILC) level.\n"
-		"       0 is the lowest level and 7 is the highest level.";
+	return HELP_MESSAGE_AIALC;
 }
 	if(!p) {
 		int gain;
@@ -186,7 +155,7 @@ char *AlcGain(char *tokenPtr) {
 	int res = IMP_AI_SetAlcGain(AudioDeviceID, AudioChID, atoi(p));
 	return RESULT(res, p);
 #else
-	return "not supported on >T20";
+	return HELP_MESSAGE_PLATFORM;
 #endif
 }
 
@@ -195,12 +164,7 @@ char *aoVolume(char *tokenPtr) {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 if (p != NULL && strcmp(p, "-h") == 0)
 {
-	return 
-		"Usage: aovol [-30-120]\n"
-		"Parameter:\n"
-		"  -30 to 120: Set the Audio Output Volume Level.\n"
-		"              -30 represents the lowest volume level,\n"
-		"              120 represents the highest volume level.";
+	return HELP_MESSAGE_AOVOL;
 }
 	if(!p) {
 		int vol;
@@ -217,11 +181,7 @@ char *aoGain(char *tokenPtr) {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	if (p != NULL && strcmp(p, "-h") == 0)
 {
-	return 
-		"Usage: aogain [0-31]\n"
-		"Parameter:\n"
-		"  0-31: Set the Audio Output Gain level.\n"
-		"        0 is the minimum gain level and 31 is the maximum gain level.";
+	return HELP_MESSAGE_AOGAIN;
 }
 	if(!p) {
 		int gain;
@@ -238,15 +198,11 @@ char *aoHighPassFilter(char *tokenPtr) {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 if (p != NULL && strcmp(p, "-h") == 0)
 {
-	return 
-		"Usage: aohpf [0/1]\n"
-		"Parameter:\n"
-		"  0: Disable High Pass Filter for Audio Output\n"
-		"  1: Enable High Pass Filter for Audio Output";
+	return HELP_MESSAGE_AOHPF;
 }
 	int res = -1;
 	if (p == NULL) {
-			return "Missing parameter";
+			return DEBUG_TEXT("Missing parameter");
 	}
 	int value = atoi(p);
 	if (value == 0) {
