@@ -13,13 +13,13 @@ static int SelfPipe[2];
 extern char *IMPTune(int fd, char *tokenPtr);
 
 // Structure for command handling
-struct CommandTableSt {
+struct CommandTableStMain {
 	const char *cmd;
 	char * (*func)(int, char *);
 };
 
 // Command handling table
-struct CommandTableSt CommandTable[] = {
+struct CommandTableStMain CommandTable[] = {
 	{ "imp_control", &IMPTune },
 	{ NULL, NULL } // End of table marker
 };

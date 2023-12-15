@@ -75,34 +75,34 @@ static char *ShowHelp(char *tokenPtr) {
         "       Add '-h' to the end of a command to get full usage and syntax.\n\n"
         "Available commands:\n"
         "-------------------   -------------------   -------------------   -------------------\n"
-        "aihpf                 flip                  setqp                 getosdgrpattr\n"
-        "aiagc                 contrast              setqpbounds           getgamma\n"
-        "ains                  brightness             setqpipdelta         getevattr\n"
-        "aiaec                 saturation             rcmode               getaeluma\n"
-        "aivol                 sharpness              aemin                getawbct\n"
-        "aigain                sinter                 autozoom             getafmetrics\n"
-        "aialc                 temper                 frontcrop            gettotalgain\n"
-        "aovol                 aecomp                 mask                 getaeattr\n"
-        "aogain                aeitmax                getosdattr           getimpversion\n"
-        "sensorfps             dpc                    getosdgrpattr        getsysversion\n"
-        "backlightcomp         drc                    getgamma             getcpuinfo\n"
-        "defogstrength         hilight                getevattr            getdeviceid\n"
-        "framerate             again                  getaeluma            getmodelfamily\n"
-        "gopattr               dgain                  getawbct             setosdalpha\n"
-        "setbitrate            hue                    getafmetrics         setosdshow\n"
-        "setgoplength          ispmode                gettotalgain         setosdpos\n"
-        "setqp                 flicker                getaeattr            help\n"
-        "whitebalance          whitebalance           getimpversion        full_demo";
+        "aihpf                 aeitmax               setbitrate            setbitrate         \n"
+        "aiagc                 dpc                   rcmode                setgoplength       \n"
+        "ains                  drc                   gopattr               setqp              \n"
+        "aiaec                 hilight               getgamma              setqpbounds        \n"
+        "aivol                 again                 getevattr             setqpipdelta       \n"
+        "aigain                dgain                 getaeluma             setosdalpha        \n"
+        "aialc                 hue                   getawbct              setosdpos          \n"
+        "aovol                 ispmode               getafmetrics          setosdpos          \n"
+        "aogain                flicker               gettotalgain          help               \n"
+        "aohpf                 autozoom              getaeattr                                \n"
+        "flip                  frontcrop             getimpversion                            \n"
+        "contrast              mask                  getcpuinfo                               \n"
+        "brightness            whitebalance          getosdattr                               \n"
+        "saturation            sensorfps             getosdgrpattr                            \n"
+        "sharpness             backlightcomp         getdeviceid                              \n"
+        "sinter                aemin                 getmodelfamily                           \n"
+        "temper                defogstrrength        getsysversion                            \n"
+        "aecomp                framerate             full_demo";
     return response;
 }
 // split into channel group future.
 
-struct CommandTableSt {
+struct CommandTableSub {
 	const char *cmd;
 	char * (*func)(char *);
 };
 
-static struct CommandTableSt imp_ControlTable[] = {
+static struct CommandTableSub imp_ControlTable[] = {
 	{ "full_demo", &fullDemo }, // Full demo
 	{ "help", &ShowHelp }, // No parameters
 	{ "aihpf",      &HighPassFilter }, // on/off

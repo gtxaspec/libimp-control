@@ -105,20 +105,26 @@ char *EchoCancellation(char *tokenPtr) {
 }
 
 char *Volume(char *tokenPtr) {
-	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-if (p != NULL && strcmp(p, "-h") == 0)
-{
-	return HELP_MESSAGE_AIVOL;
-}
-	if(!p) {
-		int vol;
-		int res = IMP_AI_GetVol(AudioDeviceID, AudioChID, &vol);
-		if(res) return "error";
-		sprintf(response, "%d", vol);
-		return response;
-	}
-	int res = IMP_AI_SetVol(AudioDeviceID, AudioChID, atoi(p));
-	return RESULT(res, p);
+    char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    if (p != NULL && strcmp(p, "-h") == 0) {
+        return HELP_MESSAGE_AIVOL;
+    }
+
+    if (!p) {
+        int vol;
+        int res = IMP_AI_GetVol(AudioDeviceID, AudioChID, &vol);
+        if (res) return "error";
+
+        sprintf(response, "%d", vol);
+        return response;
+    } else {
+        int vol = atoi(p);
+        if (vol > 120 || vol < -30) {
+            return "Invalid value";
+        }
+        int res = IMP_AI_SetVol(AudioDeviceID, AudioChID, vol);
+        return RESULT(res, p);
+    }
 }
 
 char *Gain(char *tokenPtr) {
@@ -133,6 +139,11 @@ char *Gain(char *tokenPtr) {
 		if(res) return "error";
 		sprintf(response, "%d", gain);
 		return response;
+		} else {
+		int gain = atoi(p);
+        if (gain > 31 || gain < 0) {
+            return "Invalid value";
+        }
 	}
 	int res = IMP_AI_SetGain(AudioDeviceID, AudioChID, atoi(p));
 	return RESULT(res, p);
@@ -151,6 +162,11 @@ char *AlcGain(char *tokenPtr) {
 		if(res) return "error";
 		sprintf(response, "%d", gain);
 		return response;
+			} else {
+		int gain = atoi(p);
+        if (gain > 7 || gain < 0) {
+            return "Invalid value";
+        }
 	}
 	int res = IMP_AI_SetAlcGain(AudioDeviceID, AudioChID, atoi(p));
 	return RESULT(res, p);
@@ -172,6 +188,11 @@ if (p != NULL && strcmp(p, "-h") == 0)
 		if(res) return "error";
 		sprintf(response, "%d", vol);
 		return response;
+		    } else {
+        int vol = atoi(p);
+        if (vol > 120 || vol < -30) {
+            return "Invalid value";
+        }
 	}
 	int res = IMP_AO_SetVol(AudioDeviceID, AudioChID, atoi(p));
 	return RESULT(res, p);
@@ -189,6 +210,11 @@ char *aoGain(char *tokenPtr) {
 		if(res) return "error";
 		sprintf(response, "%d", gain);
 		return response;
+				} else {
+		int gain = atoi(p);
+        if (gain > 31 || gain < 0) {
+            return "Invalid value";
+        }
 	}
 	int res = IMP_AO_SetGain(AudioDeviceID, AudioChID, atoi(p));
 	return RESULT(res, p);

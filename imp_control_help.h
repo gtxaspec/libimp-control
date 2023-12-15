@@ -220,9 +220,4 @@
 
 #define HELP_MESSAGE_PLATFORM "Not supported on this platform"
 
-
-
-
-
-// return HELP_MESSAGE_CONTRAST;
 #endif // HELP_MESSAGES_H

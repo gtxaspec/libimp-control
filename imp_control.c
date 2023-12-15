@@ -2,16 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "imp_control.h"
-#include "imp_control_audio.h"
-#include "imp_control_video.h"
-#include "imp_control_util.h"
-#include "include/imp_osd.h"
 
 char *IMPTune(int fd, char *tokenPtr) {
-
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	if(p) {
-		for(int i = 0; i < sizeof(imp_ControlTable) / sizeof(struct CommandTableSt); i++) {
+		for(int i = 0; i < sizeof(imp_ControlTable) / sizeof(struct CommandTableSub); i++) {
 			if(!strcmp(p, imp_ControlTable[i].cmd)) return (*imp_ControlTable[i].func)(tokenPtr);
 		}
 	}
