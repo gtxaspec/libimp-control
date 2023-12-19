@@ -257,19 +257,16 @@ typedef struct {
 
 extern int IMP_ISP_Tuning_GetAeAttr(IMPISPAEAttr *ae);
 
-
-
 /*
 todo:
 DPS // T20 only
 // Get all T20/T40/T41 specific functions too
+
 int32_t IMP_ISP_SetDefaultBinPath(char *path)
 int32_t IMP_ISP_GetDefaultBinPath(char *path)
 int IMP_ISP_EnableTuning(void)
 int IMP_ISP_DisableTuning(void)
 int IMP_ISP_Tuning_SetISPBypass(IMPISPTuningOpsMode enable)
-int IMP_ISP_Tuning_SetISPRunningMode(IMPISPRunningMode mode)
-int IMP_ISP_Tuning_GetISPRunningMode(IMPISPRunningMode *pmode)
 int IMP_ISP_Tuning_SetISPCustomMode(IMPISPTuningOpsMode mode)
 int IMP_ISP_Tuning_GetISPCustomMode(IMPISPTuningOpsMode mode)
 int IMP_ISP_Tuning_SetGamma(IMPISPGamma *gamma)
@@ -320,21 +317,19 @@ int IMP_ISP_Tuning_GetAeState(IMPISPAEState *ae_state)
 int IMP_ISP_Tuning_SetScalerLv(IMPISPScalerLv *scaler_level)
 int32_t IMP_ISP_SetAeAlgoFunc(IMPISPAeAlgoFunc *ae_func)
 int32_t IMP_ISP_SetAwbAlgoFunc(IMPISPAwbAlgoFunc *awb_func)
-int IMP_ISP_Tuning_GetBlcAttr(IMPISPBlcAttr *blc)
+int IMP_ISP_Tuning_GetBlcAttr(IMPISPBlcAttr *blc) //// NEXT
 int32_t IMP_ISP_Tuning_SetCsc_Attr(IMPISPCscAttr *attr)
 int32_t IMP_ISP_Tuning_GetCsc_Attr(IMPISPCscAttr *attr)
 int32_t IMP_ISP_Tuning_SetWdr_OutputMode(IMPISPWdrOutputMode *mode)
 int32_t IMP_ISP_Tuning_GetWdr_OutputMode(IMPISPWdrOutputMode *mode)
 int32_t IMP_ISP_SetFrameDrop(IMPISPFrameDropAttr *attr)
 int32_t IMP_ISP_GetFrameDrop(IMPISPFrameDropAttr *attr)
-int32_t IMP_ISP_SetFixedContraster(IMPISPFixedContrastAttr *attr)
-int32_t IMP_ISP_SET_GPIO_INIT_OR_FREE(IMPISPGPIO *gpio)
-int32_t IMP_ISP_SET_GPIO_STA(IMPISPGPIO *attr);
+int32_t IMP_ISP_SetFixedContraster(IMPISPFixedContrastAttr *attr) /// NEXT
 
 int IMP_Encoder_GetChnAttr(int encChn, IMPEncoderChnAttr * const attr);
 int IMP_Encoder_Query(int encChn, IMPEncoderChnStat *stat);
 
-int IMP_Encoder_SetFisheyeEnableStatus(int encChn, int enable);
+int IMP_Encoder_SetFisheyeEnableStatus(int encChn, int enable); /// NEXT
 int IMP_Encoder_GetFisheyeEnableStatus(int encChn, int *enable);
 int IMP_Encoder_GetChnEncType(int encChn, IMPEncoderEncType *encType);
 int IMP_Encoder_GetPool(int chnNum);
@@ -345,7 +340,6 @@ int IMP_Encoder_SetChnEntropyMode(int encChn,IMPEncoderEntropyMode eEntropyMode)
 int IMP_FrameSource_GetChnAttr(int chnNum, IMPFSChnAttr *chnAttr);
 int IMP_FrameSource_GetFrameDepth(int chnNum, int *depth);
 int IMP_FrameSource_ChnStatQuery(int chnNum, IMPFSChannelState *pstate);
-get sensor bin
 */
 
 #endif // IMP_CONTROL_VIDEO_H

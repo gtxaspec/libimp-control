@@ -68,6 +68,11 @@ char *Contrast(char *tokenPtr) {
 	IMP_ISP_Tuning_GetContrast(&cont);
 	sprintf(response, "%d", cont);
 	return response;
+    } else {
+        int cont = atoi(p);
+        if (cont > 255 || cont < 0) {
+            return "Value out of range";
+        }
   }
   int res = IMP_ISP_Tuning_SetContrast(atoi(p));
   return RESULT(res, p);
@@ -85,7 +90,12 @@ char *Brightness(char *tokenPtr) {
 	IMP_ISP_Tuning_GetBrightness(&bri);
 	sprintf(response, "%d", bri);
 	return response;
-  }
+	    } else {
+        int bri = atoi(p);
+        if (bri > 255 || bri < 0) {
+            return "Value out of range";
+        }
+  	}
   int res = IMP_ISP_Tuning_SetBrightness(atoi(p));
   return RESULT(res, p);
 }
@@ -100,7 +110,12 @@ char *Saturation(char *tokenPtr) {
 	IMP_ISP_Tuning_GetSaturation(&sat);
 	sprintf(response, "%d", sat);
 	return response;
-  }
+	    } else {
+        int sat = atoi(p);
+        if (sat > 255 || sat < 0) {
+            return "Value out of range";
+        }
+  	}
   int res = IMP_ISP_Tuning_SetSaturation(atoi(p));
   return RESULT(res, p);
 }
@@ -117,7 +132,12 @@ char *Sharpness(char *tokenPtr) {
 	IMP_ISP_Tuning_GetSharpness(&sharpness);
 	sprintf(response, "%d", sharpness);
 	return response;
-  }
+		    } else {
+        int sharpness = atoi(p);
+        if (sharpness > 255 || sharpness < 0) {
+            return "Value out of range";
+        }
+  	}
   int res = IMP_ISP_Tuning_SetSharpness(atoi(p));
   return RESULT(res, p);
 }
@@ -133,7 +153,12 @@ char *AEComp(char *tokenPtr) {
 	IMP_ISP_Tuning_GetAeComp(&comp);
 	sprintf(response, "%d", comp);
 	return response;
-  }
+		    } else {
+        int comp = atoi(p);
+        if (comp > 255 || comp < 0) {
+            return "Value out of range";
+        }
+  	}
   int res = IMP_ISP_Tuning_SetAeComp(atoi(p));
   return RESULT(res, p);
 }
@@ -159,27 +184,42 @@ char *AEItMax(char *tokenPtr) {
 }
 
 char *Sinter(char *tokenPtr) {
-  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 
-  if (p != NULL && strcmp(p, "-h") == 0) {
- return HELP_MESSAGE_SINTER;
-}
+    if (p != NULL && strcmp(p, "-h") == 0) {
+        return HELP_MESSAGE_SINTER;
+    }
 
-  if(!p) return DEBUG_TEXT("error");
-  int res = IMP_ISP_Tuning_SetSinterStrength(atoi(p));
-  return RESULT(res, p);
+    if (!p) {
+        return DEBUG_TEXT("Error: Missing parameter for Sinter");
+    } else {
+        int sint = atoi(p);
+        if (sint > 255 || sint < 0) {
+            return "Value out of range";
+        }
+        int res = IMP_ISP_Tuning_SetSinterStrength(sint);
+        return RESULT(res, p);
+    }
 }
 
 char *Temper(char *tokenPtr) {
-  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 
-  if (p != NULL && strcmp(p, "-h") == 0) {
-    return HELP_MESSAGE_TEMPER;
-}
+    if (p != NULL && strcmp(p, "-h") == 0) {
+        return HELP_MESSAGE_TEMPER;
+    }
 
-  if(!p) return DEBUG_TEXT("error");
-  int res = IMP_ISP_Tuning_SetTemperStrength(atoi(p));
-  return RESULT(res, p);
+    if (p == NULL) {
+        return DEBUG_TEXT("Error: Missing parameter for Temper");
+    } else {
+    int temperStrength = atoi(p);
+    if (temperStrength < 0 || temperStrength > 255) {
+        return "Value out of range";
+    }
+
+    int res = IMP_ISP_Tuning_SetTemperStrength(temperStrength);
+    return RESULT(res, p);
+	}
 }
 
 char *DPC(char *tokenPtr) {
@@ -195,6 +235,11 @@ char *DPC(char *tokenPtr) {
 	IMP_ISP_Tuning_GetDPC_Strength(&dpc);
 	sprintf(response, "%d", dpc);
 	return response;
+	    } else {
+        int dpc = atoi(p);
+        if (dpc > 255 || dpc < 0) {
+            return "Value out of range";
+        }
   }
   int res = IMP_ISP_Tuning_SetDPC_Strength(atoi(p));
   return RESULT(res, p);
@@ -215,6 +260,11 @@ char *DRC(char *tokenPtr) {
 	IMP_ISP_Tuning_GetDRC_Strength(&drc);
 	sprintf(response, "%d", drc);
 	return response;
+	    } else {
+        int drc = atoi(p);
+        if (drc > 255 || drc < 0) {
+            return "Value out of range";
+        }
   }
   int res = IMP_ISP_Tuning_SetDRC_Strength(atoi(p));
   return RESULT(res, p);
@@ -235,6 +285,11 @@ char *HiLight(char *tokenPtr) {
 	IMP_ISP_Tuning_GetHiLightDepress(&strength);
 	sprintf(response, "%d", strength);
 	return response;
+	    } else {
+        int strength = atoi(p);
+        if (strength > 10 || strength < 0) {
+            return "Value out of range";
+        }
   }
   int res = IMP_ISP_Tuning_SetHiLightDepress(atoi(p));
   return RESULT(res, p);
@@ -284,6 +339,11 @@ char *Hue(char *tokenPtr) {
 	IMP_ISP_Tuning_GetBcshHue(&hue);
 	sprintf(response, "%d", hue);
 	return response;
+	    } else {
+        int hue = atoi(p);
+        if (hue > 255 || hue < 0) {
+            return "Value out of range";
+        }
   }
   int res = IMP_ISP_Tuning_SetBcshHue(atoi(p));
   return RESULT(res, p);
@@ -293,20 +353,30 @@ char *Hue(char *tokenPtr) {
 }
 
 char *Mode(char *tokenPtr) {
-  char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 
-  if (p != NULL && strcmp(p, "-h") == 0) {
-    return HELP_MESSAGE_MODE;
-}
+    if (p != NULL && strcmp(p, "-h") == 0) {
+        return HELP_MESSAGE_MODE;
+    }
 
-  if(!p) {
-	IMPISPRunningMode mode;
-	IMP_ISP_Tuning_GetISPRunningMode(&mode);
-	sprintf(response, "%d", mode);
-	return response;
-  }
-  int res = IMP_ISP_Tuning_SetISPRunningMode(atoi(p));
-  return RESULT(res, p);
+    if (!p) {
+        IMPISPRunningMode mode;
+        int res = IMP_ISP_Tuning_GetISPRunningMode(&mode);
+        if (res != 0) {
+            return "Error getting mode";
+        }
+
+        sprintf(response, "%d", mode);
+        return response;
+    }
+
+    int modeValue = atoi(p);
+    if (modeValue != 0 && modeValue != 1) {
+        return "Invalid mode";
+    }
+
+    int res = IMP_ISP_Tuning_SetISPRunningMode(modeValue);
+    return RESULT(res, p);
 }
 
 char *Flicker(char *tokenPtr) {
@@ -322,7 +392,13 @@ char *Flicker(char *tokenPtr) {
 	sprintf(response, "%d", flicker);
 	return response;
   }
-  int res = IMP_ISP_Tuning_SetAntiFlickerAttr(atoi(p));
+
+    int flickerValue = atoi(p);
+    if (flickerValue != 0 && flickerValue != 1 && flickerValue != 2) {
+        return "Invalid mode";
+    }
+
+  int res = IMP_ISP_Tuning_SetAntiFlickerAttr(flickerValue);
   return RESULT(res, p);
 }
 
@@ -339,6 +415,11 @@ char *BacklightComp(char *tokenPtr) {
 	IMP_ISP_Tuning_GetBacklightComp(&strength);
 	sprintf(response, "%d", strength);
 	return response;
+		} else {
+        int strength = atoi(p);
+        if (strength > 10 || strength < 0) {
+            return "Value out of range";
+        }
   }
   int res = IMP_ISP_Tuning_SetBacklightComp(atoi(p));
   return RESULT(res, p);
@@ -360,6 +441,11 @@ char *DefogStrength(char *tokenPtr) {
 		if (getRet) return "error";
 		sprintf(response, "%u", ratio);
 		return response;
+			    } else {
+        int ratio = atoi(p);
+        if (ratio > 255 || ratio < 0) {
+            return "Value out of range";
+        }
 	}
 	ratio = (uint8_t)atoi(p);
 	int32_t setRet = IMP_ISP_Tuning_SetDefog_Strength(&ratio);
@@ -1297,11 +1383,11 @@ char *setOSDpos(char *tokenPtr) {
 		return HELP_MESSAGE_SETOSD_POS;
 	}
 
-	if (p == NULL) return "Error: x coordinate not specified";
+	if (p == NULL) return DEBUG_TEXT("Error: x coordinate not specified");
 	int x = atoi(p);
 
 	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-	if (p == NULL) return "Error: y coordinate not specified";
+	if (p == NULL) return DEBUG_TEXT("Error: y coordinate not specified");
 	int y = atoi(p);
 
 	// Set the new top-left coordinates and size
