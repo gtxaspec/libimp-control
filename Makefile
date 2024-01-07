@@ -7,9 +7,12 @@ CC := $(CROSS_COMPILE)gcc
 CFLAGS := -fPIC -std=gnu99 -shared -ldl -lm -pthread -Os -ffunction-sections -fdata-sections -fomit-frame-pointer
 LDFLAGS := -Wl,--gc-sections
 
-# Macro for T10/T20/T30
-ifeq ($(filter $(CONFIG_SOC),t10 t20 t30),)
-    # If CONFIG_SOC is NOT T10/T20/T30
+# Macro for T10/T20/T30/T21
+ifeq ($(CONFIG_SOC),t21)
+    # If CONFIG_SOC is T21
+    CFLAGS += -DCONFIG_T21
+else ifeq ($(filter $(CONFIG_SOC),t10 t20 t30),)
+    # If CONFIG_SOC is NOT T10/T20/T30 (implies T31 or others)
     CFLAGS += -DCONFIG_T31
 else
     # If CONFIG_SOC is T10/T20/T30
