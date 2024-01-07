@@ -64,8 +64,12 @@ void rampControlValue(const char *controlName) {
 		setFunctionUint = &IMP_ISP_Tuning_SetSinterStrength;
 	} else if (strcmp(controlName, "temper") == 0) {
 		setFunctionUint = &IMP_ISP_Tuning_SetTemperStrength;
+#ifndef CONFIG_T21
 	} else if (strcmp(controlName, "aecomp") == 0) {
 		setFunctionInt = &IMP_ISP_Tuning_SetAeComp;
+#else
+	IMP_LOG_ERR(TAG, HELP_MESSAGE_PLATFORM);
+#endif
 #ifndef CONFIG_T20
 	} else if (strcmp(controlName, "dpc") == 0) {
 		setFunctionUint = &IMP_ISP_Tuning_SetDPC_Strength;
@@ -241,11 +245,11 @@ char* fullDemo(char *tokenPtr) {
 	FrontCropDemo();
 	sleep(1);
 	if (p != NULL && strcmp(p, "-f") == 0)
-{
-// Autozoom requires performant SOCs for now    
-	AutoZoomDemo();
-	sleep(1);
-}
+	{
+		// Autozoom requires performant SOCs for now
+		AutoZoomDemo();
+		sleep(1);
+	}
 	ispdemo();
 	sleep(1);
 	// Ramp all the controls

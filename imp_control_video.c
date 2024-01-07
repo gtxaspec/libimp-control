@@ -143,6 +143,7 @@ char *Sharpness(char *tokenPtr) {
 }
 
 char *AEComp(char *tokenPtr) {
+#ifndef CONFIG_T21
   char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 
     if (p != NULL && strcmp(p, "-h") == 0) {
@@ -161,6 +162,9 @@ char *AEComp(char *tokenPtr) {
   	}
   int res = IMP_ISP_Tuning_SetAeComp(atoi(p));
   return RESULT(res, p);
+#else
+  return HELP_MESSAGE_PLATFORM;
+#endif
 }
 
 char *AEItMax(char *tokenPtr) {
@@ -906,21 +910,58 @@ char *Mask(char *tokenPtr) {
 	return HELP_MESSAGE_PLATFORM;
 	#endif
 
-}char *SetAndGetRcMode(char *tokenPtr) {
+}
+
+char *SetAndGetRcMode(char *tokenPtr) {
 	int encChn;
 	IMPEncoderAttrRcMode rcMode;
 
 	char *p = strtok_r(tokenPtr, " \t\r\n", &tokenPtr);
-	if (!p) return DEBUG_TEXT("Usage: <encChn> <rcMode> [<mode specific parameters>]\n"
-				   "rcModes:\n"
-				   "0: FIXQP: <iInitialQP>\n"
-				   "2: CBR: <iInitialQP> <iMinQP> <iMaxQP> <bitrate>\n"
-				   "3: VBR: <iInitialQP> <iMinQP> <iMaxQP> <bitrate> <maxBitRate>\n"
-				   "4: CAPPED_VBR: <iInitialQP> <iMinQP> <iMaxQP> <bitrate> <maxBitRate> <maxPSNR>\n"
-				   "8: CAPPED_QUALITY: <iInitialQP> <iMinQP> <iMaxQP> <bitrate> <maxBitRate> <maxPSNR>");
+
+	if (p != NULL && strcmp(p, "-h") == 0) {
+		return HELP_MESSAGE_RCMODE;
+	}
+
+    if (p == NULL) {
+        return DEBUG_TEXT("No parameteres provided");
+    }
+
 	encChn = atoi(p);
-	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-	if (!p) return "Error: Missing rcMode";
+
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+
+    if (p == NULL) {
+        if (IMP_Encoder_GetChnAttrRcMode(encChn, &rcMode) != 0) {
+            return "Error: Failed to get rate control mode";
+        }
+
+        switch (rcMode.rcMode) {
+            case IMP_ENC_RC_MODE_FIXQP:
+                snprintf(response, sizeof(response), "Current RC Mode: FIXQP, InitialQP: %d",
+                         rcMode.attrFixQp.iInitialQP);
+                break;
+            case IMP_ENC_RC_MODE_CBR:
+                snprintf(response, sizeof(response), "Current RC Mode: CBR, InitialQP: %d, MinQP: %d, MaxQP: %d, Bitrate: %u",
+                         rcMode.attrCbr.iInitialQP, rcMode.attrCbr.iMinQP, rcMode.attrCbr.iMaxQP, rcMode.attrCbr.uTargetBitRate);
+                break;
+            case IMP_ENC_RC_MODE_VBR:
+                snprintf(response, sizeof(response), "Current RC Mode: VBR, InitialQP: %d, MinQP: %d, MaxQP: %d, Bitrate: %u, MaxBitRate: %u",
+                         rcMode.attrVbr.iInitialQP, rcMode.attrVbr.iMinQP, rcMode.attrVbr.iMaxQP, rcMode.attrVbr.uTargetBitRate, rcMode.attrVbr.uMaxBitRate);
+                break;
+            case IMP_ENC_RC_MODE_CAPPED_VBR:
+                snprintf(response, sizeof(response), "Current RC Mode: CAPPED_VBR, InitialQP: %d, MinQP: %d, MaxQP: %d, Bitrate: %u, MaxBitRate: %u, MaxPSNR: %u",
+                         rcMode.attrCappedVbr.iInitialQP, rcMode.attrCappedVbr.iMinQP, rcMode.attrCappedVbr.iMaxQP, rcMode.attrCappedVbr.uTargetBitRate, rcMode.attrCappedVbr.uMaxBitRate, rcMode.attrCappedVbr.uMaxPSNR);
+                break;
+            case IMP_ENC_RC_MODE_CAPPED_QUALITY:
+                snprintf(response, sizeof(response), "Current RC Mode: CAPPED_QUALITY, InitialQP: %d, MinQP: %d, MaxQP: %d, Bitrate: %u, MaxBitRate: %u, MaxPSNR: %u",
+                         rcMode.attrCappedQuality.iInitialQP, rcMode.attrCappedQuality.iMinQP, rcMode.attrCappedQuality.iMaxQP, rcMode.attrCappedQuality.uTargetBitRate, rcMode.attrCappedQuality.uMaxBitRate, rcMode.attrCappedQuality.uMaxPSNR);
+                break;
+            default:
+                snprintf(response, sizeof(response), "Unsupported RC mode");
+                break;
+        }
+        return response;
+    }
 
 	rcMode.rcMode = (IMPEncoderRcMode)atoi(p);
 
@@ -1007,7 +1048,81 @@ char *Mask(char *tokenPtr) {
 	return "Rate control mode set successfully";
 }
 
+char *ControlFisheyeStatus(char *tokenPtr) {
+    int encChn, enable, ret;
+
+    char *p = strtok_r(tokenPtr, " \t\r\n", &tokenPtr);
+
+    // Check for help message request
+    if (p != NULL && strcmp(p, "-h") == 0) {
+        return HELP_MESSAGE_FISHEYE;
+    }
+
+    if (p == NULL) {
+        return DEBUG_TEXT("No channel number provided");
+    }
+
+
+    encChn = atoi(p);
+
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+
+    // Set fisheye status
+    if (p != NULL) {
+        enable = atoi(p);
+        ret = IMP_Encoder_SetFisheyeEnableStatus(encChn, enable);
+        if (ret != 0) {
+            sprintf(response, "Error: Unable to set fisheye status for channel %d", encChn);
+        } else {
+            sprintf(response, "Fisheye status set to %d for channel %d", enable, encChn);
+        }
+    }
+    // Get fisheye status
+    else {
+        ret = IMP_Encoder_GetFisheyeEnableStatus(encChn, &enable);
+        if (ret != 0) {
+            sprintf(response, "Error: Unable to get fisheye status for channel %d", encChn);
+        } else {
+            sprintf(response, "Fisheye status for channel %d is %d", encChn, enable);
+        }
+    }
+
+    return response;
+}
+
 // GET ONLY
+
+char *GetChannelEncodingType(char *tokenPtr) {
+	#ifndef CONFIG_T20
+    int encChn;
+    IMPEncoderEncType encType;
+
+    char *p = strtok_r(tokenPtr, " \t\r\n", &tokenPtr);
+
+    // Check for help message request
+    if (p != NULL && strcmp(p, "-h") == 0) {
+        return HELP_MESSAGE_GETENCTYPE;
+    }
+
+    if (p == NULL) {
+        return DEBUG_TEXT("No channel number provided");
+    }
+
+    encChn = atoi(p);
+
+    int ret = IMP_Encoder_GetChnEncType(encChn, &encType);
+    if (ret != 0) {
+        return "Error: Failed to get encoding type";
+    }
+
+    sprintf(response, "Channel %d Encoding Type: %d", encChn, encType);
+
+    return response;
+	#else
+		return HELP_MESSAGE_PLATFORM;
+	#endif
+}
+
 char *GetEVAttributes(char *tokenPtr) {
 	IMPISPEVAttr attr;
 	int ret = IMP_ISP_Tuning_GetEVAttr(&attr);
@@ -1051,6 +1166,7 @@ char *GetAFMetrics(char *tokenPtr) {
 	sprintf(response, "%u", metric);
 	return response;
 }
+
 char *GetTotalGain(char *tokenPtr) {
 	uint32_t gain;
 	int ret = IMP_ISP_Tuning_GetTotalGain(&gain);
@@ -1396,7 +1512,7 @@ char *setOSDpos(char *tokenPtr) {
 	return "OSD region position and size update scheduled";
 }
 
-char *OSDTest(char *tokenPtr)
+char *Test(char *tokenPtr)
 {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	int grpNum = 0;

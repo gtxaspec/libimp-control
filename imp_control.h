@@ -52,20 +52,22 @@ char *SetGopLength(char *tokenPtr);
 char *SetChnQp(char *tokenPtr);
 char *SetChnQpBounds(char *tokenPtr);
 char *SetChnQpIPDelta(char *tokenPtr);
+char *showOSD(char *tokenPtr);
+char *setOSDpos(char *tokenPtr);
+char *setOSDalpha(char *tokenPtr);
+char *ControlFisheyeStatus(char *tokenPtr);
+
 char *GetOSDRegionAttributes(char *tokenPtr);
 char *GetOSDGroupRegionAttributes(char *tokenPtr);
-
-char* fullDemo(char *tokenPtr);
-
+char *GetChannelEncodingType(char *tokenPtr);
 char *GetDeviceID();
 char *GetModelFamily();
 char *GetSysVersion();
 char *GetIMPVersion(char *tokenPtr);
 char *GetCPUInfo(char *tokenPtr);
-char *setOSDalpha(char *tokenPtr);
-char *OSDTest(char *tokenPtr);
-char *showOSD(char *tokenPtr);
-char *setOSDpos(char *tokenPtr);
+
+char *Test(char *tokenPtr);
+char* fullDemo(char *tokenPtr);
 
 
 static char *ShowHelp(char *tokenPtr) {
@@ -84,7 +86,7 @@ static char *ShowHelp(char *tokenPtr) {
         "aialc                 hue                   getawbct              setosdpos          \n"
         "aovol                 ispmode               getafmetrics          setosdpos          \n"
         "aogain                flicker               gettotalgain          help               \n"
-        "aohpf                 autozoom              getaeattr                                \n"
+        "aohpf                 autozoom              getaeattr             getchnencoder      \n"
         "flip                  frontcrop             getimpversion                            \n"
         "contrast              mask                  getcpuinfo                               \n"
         "brightness            whitebalance          getosdattr                               \n"
@@ -95,7 +97,7 @@ static char *ShowHelp(char *tokenPtr) {
         "aecomp                framerate             full_demo";
     return response;
 }
-// split into channel group future.
+// split into channel group, future.
 
 struct CommandTableSub {
 	const char *cmd;
@@ -143,6 +145,7 @@ static struct CommandTableSub imp_ControlTable[] = {
 	{ "framerate", &SetAndGetFrameRate },
 	{ "rcmode", &SetAndGetRcMode },
 	{ "gopattr", &SetAndGetGopAttr },
+	{ "setfisheye", &ControlFisheyeStatus },
 	// Read only:
 	{ "getgamma",     &Gamma },
 	{ "getevattr", &GetEVAttributes },
@@ -158,6 +161,7 @@ static struct CommandTableSub imp_ControlTable[] = {
 	{ "getdeviceid", &GetDeviceID },
 	{ "getmodelfamily", &GetModelFamily },
 	{ "getsysversion", &GetSysVersion },
+	{ "getchnencoder", &GetChannelEncodingType },
 	// Set Only:
 	{ "setbitrate", &SetBitRate },
 	{ "setgoplength", &SetGopLength },
@@ -167,8 +171,8 @@ static struct CommandTableSub imp_ControlTable[] = {
 	{ "setosdalpha", &setOSDalpha},
 	{ "setosdshow", &showOSD},
 	{ "setosdpos", &setOSDpos},
-	{ "osdtest", &OSDTest},
-
+	// Test
+	{ "test", &Test},
 };
 
 #endif // IMP_CONTROL_H

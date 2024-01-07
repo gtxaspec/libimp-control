@@ -215,9 +215,29 @@
 #define HELP_MESSAGE_FULLDEMO "Usage: full_demo\n" \
 		"Description:\n" \
 		"  This command initiates a full demonstration mode, showcasing\n" \
-		"  the capabilities and features of the system. It does not require\n" \
-		"  any additional parameters."
+		"  the capabilities and features of the system. Use the '-f' parameter\n" \
+		"  to force all demo loops, even those which may not run reliably on lower\n" \
+		"  performance SOC models."
 
 #define HELP_MESSAGE_PLATFORM "Not supported on this platform"
 
+#define HELP_MESSAGE_RCMODE "Usage: <encChn> <rcMode> [<mode specific parameters>]\n" \
+				   "rcModes:\n" \
+				   "0: FIXQP: <iInitialQP>\n" \
+				   "2: CBR: <iInitialQP> <iMinQP> <iMaxQP> <bitrate>\n" \
+				   "3: VBR: <iInitialQP> <iMinQP> <iMaxQP> <bitrate> <maxBitRate>\n" \
+				   "4: CAPPED_VBR: <iInitialQP> <iMinQP> <iMaxQP> <bitrate> <maxBitRate> <maxPSNR>\n" \
+				   "8: CAPPED_QUALITY: <iInitialQP> <iMinQP> <iMaxQP> <bitrate> <maxBitRate> <maxPSNR>"
+
+#define HELP_MESSAGE_GETENCTYPE "Usage: <encChn>\n" \
+					"Retrieves the encoding type for a video channel.\n" \
+					"Encoding Types:\n" \
+					"  0 - AVC (Advanced Video Coding)\n" \
+					"  1 - HEVC (High Efficiency Video Coding)\n" \
+					"  4 - JPEG (Joint Photographic Experts Group)\n" \
+					"Example:\n" \
+					"getchnencoder 2  // Retrieves encoding type for channel 2"
+
+#define HELP_MESSAGE_FISHEYE "Usage: <encChn> <enable>\n" \
+					"Fisheye correction effect may only be enabled or disabled before the channel is created."
 #endif // HELP_MESSAGES_H

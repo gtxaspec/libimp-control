@@ -331,7 +331,6 @@ int IMP_Encoder_Query(int encChn, IMPEncoderChnStat *stat);
 
 int IMP_Encoder_SetFisheyeEnableStatus(int encChn, int enable); /// NEXT
 int IMP_Encoder_GetFisheyeEnableStatus(int encChn, int *enable);
-int IMP_Encoder_GetChnEncType(int encChn, IMPEncoderEncType *encType);
 int IMP_Encoder_GetPool(int chnNum);
 int IMP_Encoder_GetStreamBufSize(int encChn, uint32_t *nrStreamSize);
 int IMP_Encoder_GetChnAveBitrate(int encChn, IMPEncoderStream *stream, int frames, double *br);
@@ -340,6 +339,7 @@ int IMP_Encoder_SetChnEntropyMode(int encChn,IMPEncoderEntropyMode eEntropyMode)
 int IMP_FrameSource_GetChnAttr(int chnNum, IMPFSChnAttr *chnAttr);
 int IMP_FrameSource_GetFrameDepth(int chnNum, int *depth);
 int IMP_FrameSource_ChnStatQuery(int chnNum, IMPFSChannelState *pstate);
+
 */
 
 #endif // IMP_CONTROL_VIDEO_H
