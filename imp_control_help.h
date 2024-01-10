@@ -135,8 +135,7 @@
 		   "Description: Retrieves attributes for a specified OSD region within a specific group, including visibility, position, scaling, alpha settings, and layer.\n" \
 		   "Returns: A detailed description of the OSD group region's attributes (Visibility, Offset Position, Scaling, Alpha Settings, Layer), or an error message if the region handle or group number is not provided or invalid."
 
-#define HELP_MESSAGE_SETOSDALPHA "Usage: setOSDalpha [alpha_en] [fg_alpha]\n" \
-			"alpha_en: Alpha enable flag (0 for disable, 1 for enable).\n" \
+#define HELP_MESSAGE_SETOSDALPHA "Usage: setOSDalpha [fg_alpha]\n" \
 			"fg_alpha: Foreground alpha value (0-255).\n" \
 			"Description: Sets the alpha attributes for a specified OSD group region. This includes enabling/disabling alpha and setting the foreground alpha level.\n" \
 			"Note: Background alpha is set to 0 by default. The function assumes that region handle and group number are predefined.\n" \

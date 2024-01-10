@@ -84,7 +84,7 @@ static char *ShowHelp(char *tokenPtr) {
         "aivol                 again                 getevattr             setqpipdelta       \n"
         "aigain                dgain                 getaeluma             setosdalpha        \n"
         "aialc                 hue                   getawbct              setosdpos          \n"
-        "aovol                 ispmode               getafmetrics          setosdpos          \n"
+        "aovol                 ispmode               getafmetrics                             \n"
         "aogain                flicker               gettotalgain          help               \n"
         "aohpf                 autozoom              getaeattr             getchnencoder      \n"
         "flip                  frontcrop             getimpversion                            \n"
