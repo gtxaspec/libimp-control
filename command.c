@@ -15,6 +15,10 @@
 #include "command.h"
 #include "include/imp_log.h"
 #include "imp_control_util.h"
+#include <libgen.h>
+
+// Track library intialization to prevent multiple loads
+int isLibraryInitialized = 0;
 
 // Function to send command response
 void CommandResponse(int fd, const char *res) {
@@ -185,28 +189,16 @@ static void *CommandThread(void *arg) {
 	return NULL;
 }
 
-// Hook function with the same signature as IMP_System_GetCPUInfo
-// Avoiding the use of a constructor because launching our own
-// thread interferes with the host program's complex threading mechanisms.
-const char* IMP_System_GetCPUInfo() {
-	static const char* (*original_IMP_System_GetCPUInfo)(void) = NULL;
+void executeControl(const char* loadingMethod) {
+	// Set the library as initialized
+	isLibraryInitialized = 1;
 
-	if (!original_IMP_System_GetCPUInfo) {
-		// Dynamically look up the original IMP_System_GetCPUInfo function
-		original_IMP_System_GetCPUInfo = dlsym(RTLD_NEXT, "IMP_System_GetCPUInfo");
-		if (!original_IMP_System_GetCPUInfo) {
-			IMP_LOG_ERR(TAG, "Error in `dlsym`: %s\n", dlerror());
-			return NULL; // return NULL as the function expects a string return type
-		}
-	}
-
-	// Start our thread prior to the original function
-	printf("LIBIMP_CONTROL Version: %s\n", VERSION);
-	IMP_LOG_INFO(TAG,"Version: %s\n", VERSION);
+	printf("LIBIMP_CONTROL Version: %s %s\n", VERSION, loadingMethod);
+	IMP_LOG_INFO(TAG, "Version: %s %s\n", VERSION, loadingMethod);
 
 	if (pipe(SelfPipe) != 0) {
 		IMP_LOG_ERR(TAG, "pipe creation error\n");
-		return NULL;
+		return;
 	}
 
 	// Set pipe to non-blocking mode
@@ -218,20 +210,70 @@ const char* IMP_System_GetCPUInfo() {
 	pthread_t thread;
 	if (pthread_create(&thread, NULL, CommandThread, NULL) != 0) {
 		IMP_LOG_ERR(TAG, "thread creation error\n");
+		return;
+	}
+	// Detach the thread to free resources when it's finished
+	pthread_detach(thread);
+}
+
+// Alternate loading method, broken due to execution AFTER the SDK has been started
+char *plugin_call(int command, const char *string) {
+	if (isLibraryInitialized) {
+	// Library is already initialized via dlsym, meow.
+	printf("Plugin already active\n");
+	return NULL;
+	}
+
+	executeControl("plugin_call");
+	// The command and string parameters are not used, but they are retained
+	// for compatibility with calls from elsewhere in the program
+	return NULL;
+}
+
+// Hook function with the same signature as IMP_System_GetCPUInfo
+// Avoiding the use of a constructor because launching our own
+// thread interferes with the host program's complex threading mechanisms.
+
+const char* IMP_System_GetCPUInfo() {
+	static const char* (*original_IMP_System_GetCPUInfo)(void) = NULL;
+	int loadedViaPreload = 0;
+
+	// Check if LD_PRELOAD is set and contains 'libimp_control.so'
+	char* preload = getenv("LD_PRELOAD");
+	if (preload) {
+		char* preload_copy = strdup(preload);
+		if (!preload_copy) {
+			IMP_LOG_ERR(TAG, "Memory allocation error\n");
+			return NULL;
+		}
+
+		char* token = strtok(preload_copy, " :");
+		while (token) {
+			char* libname = basename(token);
+			if (strcmp(libname, "libimp_control.so") == 0) {
+				loadedViaPreload = 1;
+				break;
+			}
+			token = strtok(NULL, " :");
+		}
+		free(preload_copy);
+	}
+
+	if (loadedViaPreload) {
+		if (!original_IMP_System_GetCPUInfo) {
+			original_IMP_System_GetCPUInfo = dlsym(RTLD_NEXT, "IMP_System_GetCPUInfo");
+			if (!original_IMP_System_GetCPUInfo) {
+				IMP_LOG_ERR(TAG, "Error in `dlsym`: %s\n", dlerror());
+				return NULL;
+			}
+		}
+		// Start our thread prior to the original function when using DLSYM
+		executeControl("dlsym");
+		return original_IMP_System_GetCPUInfo();
+	} else {
 		return NULL;
 	}
 
-	// Detach the thread to free resources when it's finished
-	pthread_detach(thread);
-
-	// Unset LD_PRELOAD to prevent it from being inherited by child processes
-	// This also prevents the host program's built-in webserver from breaking
-	unsetenv("LD_PRELOAD");
-
-	// Call the original IMP_System_GetCPUInfo function
-	const char* result = original_IMP_System_GetCPUInfo();
-
-	// Optionally, we can place code here to run after the original function
-
-	return result;
+	// The following line should never be reached, but it's here for completeness.
+	return NULL;
 }
