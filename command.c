@@ -216,7 +216,7 @@ void executeControl(const char* loadingMethod) {
 	pthread_detach(thread);
 }
 
-// Alternate loading method, broken due to execution AFTER the SDK has been started
+// Alternate loading method, currently broken due to unstable API
 char *plugin_call(int command, const char *string) {
 	if (isLibraryInitialized) {
 	// Library is already initialized via dlsym, meow.
@@ -230,12 +230,13 @@ char *plugin_call(int command, const char *string) {
 	return NULL;
 }
 
-// Hook function with the same signature as IMP_System_GetCPUInfo
+// Hook function with the same signature as SU_Base_GetModelNumber
 // Avoiding the use of a constructor because launching our own
 // thread interferes with the host program's complex threading mechanisms.
 
-const char* IMP_System_GetCPUInfo() {
-	static const char* (*original_IMP_System_GetCPUInfo)(void) = NULL;
+int (*original_SU_Base_GetModelNumber)(SUModelNum *modelNum) = NULL;
+
+int SU_Base_GetModelNumber(SUModelNum *modelNum) {
 	int loadedViaPreload = 0;
 
 	// Check if LD_PRELOAD is set and contains 'libimp_control.so'
@@ -244,7 +245,7 @@ const char* IMP_System_GetCPUInfo() {
 		char* preload_copy = strdup(preload);
 		if (!preload_copy) {
 			IMP_LOG_ERR(TAG, "Memory allocation error\n");
-			return NULL;
+			return -1;
 		}
 
 		char* token = strtok(preload_copy, " :");
@@ -260,20 +261,20 @@ const char* IMP_System_GetCPUInfo() {
 	}
 
 	if (loadedViaPreload) {
-		if (!original_IMP_System_GetCPUInfo) {
-			original_IMP_System_GetCPUInfo = dlsym(RTLD_NEXT, "IMP_System_GetCPUInfo");
-			if (!original_IMP_System_GetCPUInfo) {
+		if (!original_SU_Base_GetModelNumber) {
+			original_SU_Base_GetModelNumber = dlsym(RTLD_NEXT, "SU_Base_GetModelNumber");
+			if (!original_SU_Base_GetModelNumber) {
 				IMP_LOG_ERR(TAG, "Error in `dlsym`: %s\n", dlerror());
-				return NULL;
+				return -1; // Adjust based on expected error code
 			}
 		}
 		// Start our thread prior to the original function when using DLSYM
 		executeControl("dlsym");
-		return original_IMP_System_GetCPUInfo();
+		return original_SU_Base_GetModelNumber(modelNum);
 	} else {
-		return NULL;
+		return -1;
 	}
 
 	// The following line should never be reached, but it's here for completeness.
-	return NULL;
+	return -1;
 }
