@@ -1,5 +1,6 @@
 #include <arpa/inet.h>  // For socket functions and structures
 #include <dlfcn.h>      // For dlsym, dlerror
+#include <sys/epoll.h>	// For epoll
 #include <errno.h>      // For errno
 #include <fcntl.h>      // For fcntl
 #include <netinet/in.h> // For sockaddr_in
@@ -16,6 +17,11 @@
 #include "include/imp_log.h"
 #include "imp_control_util.h"
 #include <libgen.h>
+
+// Define the maximum number of events that epoll_wait can return at a time.
+// This number represents the capacity of the event array used for handling
+// file descriptor events in the epoll mechanism.
+#define MAX_EVENTS 64
 
 // Track library intialization to prevent multiple loads
 int isLibraryInitialized = 0;
@@ -45,55 +51,103 @@ static void *CommandThread(void *arg) {
 	}
 
 	int sock_optval = 1;
-	if (setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &sock_optval, sizeof(sock_optval)) == -1) {
+	if (setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &sock_optval,
+				sizeof(sock_optval)) == -1) {
 		IMP_LOG_ERR(TAG, "setsockopt error: %s\n", strerror(errno));
 		close(listenSocket);
 		return NULL;
 	}
+	// Define the server address structure
+	struct sockaddr_in saddr = {.sin_family = AF_INET,
+								.sin_port = htons(CommandPort),
+								.sin_addr.s_addr = htonl(INADDR_ANY)};
 
-	struct sockaddr_in saddr = {
-		.sin_family = AF_INET,
-		.sin_port = htons(CommandPort),
-		.sin_addr.s_addr = htonl(INADDR_ANY)
-	};
-
+	// Bind the socket to the specified address and port
 	if (bind(listenSocket, (struct sockaddr *)&saddr, sizeof(saddr)) < 0) {
 		IMP_LOG_ERR(TAG, "bind error: %s\n", strerror(errno));
 		close(listenSocket);
 		return NULL;
 	}
 
+	// Start listening for incoming connections
 	if (listen(listenSocket, MaxConnect) == -1) {
 		IMP_LOG_ERR(TAG, "listen error: %s\n", strerror(errno));
 		close(listenSocket);
 		return NULL;
 	}
 
-	fd_set targetFd;
-	FD_ZERO(&targetFd);
-	FD_SET(listenSocket, &targetFd);
-	int maxFd = listenSocket;
-	FD_SET(SelfPipe[0], &targetFd);
-	if (SelfPipe[0] > maxFd) {
-		maxFd = SelfPipe[0];
+	// Create an epoll instance
+	int epoll_fd = epoll_create1(0);
+	if (epoll_fd == -1) {
+		IMP_LOG_ERR(TAG, "epoll_create error: %s\n", strerror(errno));
+		close(listenSocket);
+		return NULL;
 	}
 
-	// Command processing loop
+	struct epoll_event ev, events[MAX_EVENTS]; // Interested in input events
+	ev.events = EPOLLIN;
+
+	// Add the listening socket to the epoll instance for monitoring
+	ev.data.fd = listenSocket;
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listenSocket, &ev) == -1) {
+		IMP_LOG_ERR(TAG, "epoll_ctl listenSocket error: %s\n", strerror(errno));
+		close(epoll_fd);
+		close(listenSocket);
+		return NULL;
+	}
+
+	// Also monitor the self-pipe for internal communication
+	ev.data.fd = SelfPipe[0];
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, SelfPipe[0], &ev) == -1) {
+		IMP_LOG_ERR(TAG, "epoll_ctl SelfPipe error: %s\n", strerror(errno));
+		close(epoll_fd);
+		close(listenSocket);
+		return NULL;
+	}
+
+	// Command processing loop using epoll to monitor file descriptors
 	while (1) {
-		fd_set checkFDs = targetFd;
-		int selectResult = select(maxFd + 1, &checkFDs, NULL, NULL, NULL);
-		if (selectResult == -1) {
-			IMP_LOG_ERR(TAG, "select error: %s\n", strerror(errno));
+		int nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+		if (nfds == -1) {
+			IMP_LOG_ERR(TAG, "epoll_wait error: %s\n", strerror(errno));
 			continue;
 		}
 
-		// Check each file descriptor
-		for (int fd = 0; fd <= maxFd; fd++) {
-			if (!FD_ISSET(fd, &checkFDs)) {
-				continue;
-			}
+		for (int n = 0; n < nfds; ++n) {
+			if (events[n].data.fd == listenSocket) {
+				// Handle new incoming connections
+				struct sockaddr_in dstAddr;
+				socklen_t len = sizeof(dstAddr);
+				int newSocket =
+					accept(listenSocket, (struct sockaddr *)&dstAddr, &len);
+				if (newSocket < 0) {
+					IMP_LOG_ERR(TAG, "accept error\n");
+					continue;
+				}
 
-			if (fd == SelfPipe[0]) {
+				// Accept connections only from localhost
+				if (strcmp(inet_ntoa(dstAddr.sin_addr), "127.0.0.1")) {
+					fprintf(stderr, "Rejected request from %s\n",
+							inet_ntoa(dstAddr.sin_addr));
+					close(newSocket);
+					continue;
+				}
+
+				// Set socket to non-blocking mode
+				int flags = fcntl(newSocket, F_GETFL, 0);
+				fcntl(newSocket, F_SETFL, O_NONBLOCK | flags);
+
+				// Add new socket to epoll instance
+				struct epoll_event ev = {0};
+				ev.events = EPOLLIN;
+				ev.data.fd = newSocket;
+				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, newSocket, &ev) == -1) {
+					IMP_LOG_ERR(TAG, "epoll_ctl newSocket error: %s\n",
+								strerror(errno));
+					close(newSocket);
+					continue;
+				}
+			} else if (events[n].data.fd == SelfPipe[0]) {
 				// Handle self-pipe for internal communication
 				unsigned char buf[BufferSize];
 				while (1) {
@@ -111,80 +165,54 @@ static void *CommandThread(void *arg) {
 					strcat(res, "\n");
 					send(resFd, res, strlen(res) + 1, 0);
 					close(resFd);
-					FD_CLR(resFd, &targetFd);
-				}
-			} else if (fd == listenSocket) {
-				// Handle new incoming connections
-				struct sockaddr_in dstAddr;
-				socklen_t len = sizeof(dstAddr);
-				int newSocket = accept(fd, (struct sockaddr *)&dstAddr, &len);
-				if (newSocket < 0) {
-					IMP_LOG_ERR(TAG, "accept error\n");
-					continue;
-				}
-
-				// Accept conneections only from localhost
-				if(strcmp(inet_ntoa(dstAddr.sin_addr), "127.0.0.1")) {
-					fprintf(stderr, "Rejected request from %s\n", inet_ntoa(dstAddr.sin_addr));
-					close(newSocket);
-					 continue;
-				}
-
-				// Set socket to non-blocking mode
-				int flags = fcntl(newSocket, F_GETFL, 0);
-				fcntl(newSocket, F_SETFL, O_NONBLOCK | flags);
-
-				FD_SET(newSocket, &targetFd);
-				if (newSocket > maxFd) {
-					maxFd = newSocket;
-				}
-				if (maxFd >= MaxConnect) {
-					maxFd = MaxConnect - 1;
 				}
 			} else {
 				// Handle data from clients
 				char buf[BufferSize];
-				int size = recv(fd, buf, BufferSize - 1, 0);
+				int size = recv(events[n].data.fd, buf, BufferSize - 1, 0);
 				if (size <= 0) {
-					close(fd);
-					FD_CLR(fd, &targetFd);
+					close(events[n].data.fd);
 					continue;
 				}
-				buf[size] = '\0'; // Null-terminate the received data
+				buf[size] = '\0';  // Null-terminate the received data
 
+				// Parse and execute the received command
 				char *tokenPtr;
 				char *command = strtok_r(buf, " \t\r\n", &tokenPtr);
 				if (command == NULL) {
 					continue;
 				}
 
+				// Check and execute the command if found
 				int executed = 0;
 				for (int i = 0; CommandTable[i].cmd != NULL; i++) {
 					if (strcasecmp(command, CommandTable[i].cmd) == 0) {
-						char *response = CommandTable[i].func(fd, tokenPtr);
+						char *response =
+							CommandTable[i].func(events[n].data.fd, tokenPtr);
 						if (response) {
-							send(fd, response, strlen(response) + 1, 0);
+							send(events[n].data.fd, response,
+								strlen(response) + 1, 0);
 							char cr = '\n';
-							send(fd, &cr, 1, 0);
-							close(fd);
-							FD_CLR(fd, &targetFd);
+							send(events[n].data.fd, &cr, 1, 0);
+							close(events[n].data.fd);
 						}
 						executed = 1;
 						break;
 					}
 				}
 
+				// If the command is not recognized, send an error message
 				if (!executed) {
 					char *error_msg = "Unknown command\n";
-					send(fd, error_msg, strlen(error_msg) + 1, 0);
-					close(fd);
-					FD_CLR(fd, &targetFd);
-					IMP_LOG_ERR(TAG,"Unknown command received: %s\n", command);
+					send(events[n].data.fd, error_msg, strlen(error_msg) + 1, 0);
+					close(events[n].data.fd);
+					IMP_LOG_ERR(TAG, "Unknown command received: %s\n", command);
 				}
 			}
 		}
 	}
 
+	close(epoll_fd);
 	close(listenSocket);
 	return NULL;
 }
