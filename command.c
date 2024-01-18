@@ -258,51 +258,27 @@ char *plugin_call(int command, const char *string) {
 	return NULL;
 }
 
-// Hook function with the same signature as SU_Base_GetModelNumber
+// GPT-4_EDIT-24-01-25-1705523426
+// Hook function with the same signature as IMP_System_GetCPUInfo
 // Avoiding the use of a constructor because launching our own
 // thread interferes with the host program's complex threading mechanisms.
 
-int (*original_SU_Base_GetModelNumber)(SUModelNum *modelNum) = NULL;
-
-int SU_Base_GetModelNumber(SUModelNum *modelNum) {
+const char* IMP_System_GetCPUInfo() {
+	static const char* (*original_IMP_System_GetCPUInfo)(void) = NULL;
 	int loadedViaPreload = 0;
-
-	// Check if LD_PRELOAD is set and contains 'libimp_control.so'
-	char* preload = getenv("LD_PRELOAD");
-	if (preload) {
-		char* preload_copy = strdup(preload);
-		if (!preload_copy) {
-			IMP_LOG_ERR(TAG, "Memory allocation error\n");
-			return -1;
-		}
-
-		char* token = strtok(preload_copy, " :");
-		while (token) {
-			char* libname = basename(token);
-			if (strcmp(libname, "libimp_control.so") == 0) {
-				loadedViaPreload = 1;
-				break;
-			}
-			token = strtok(NULL, " :");
-		}
-		free(preload_copy);
-	}
-
-	if (loadedViaPreload) {
-		if (!original_SU_Base_GetModelNumber) {
-			original_SU_Base_GetModelNumber = dlsym(RTLD_NEXT, "SU_Base_GetModelNumber");
-			if (!original_SU_Base_GetModelNumber) {
-				IMP_LOG_ERR(TAG, "Error in `dlsym`: %s\n", dlerror());
-				return -1; // Adjust based on expected error code
-			}
+	if (!original_IMP_System_GetCPUInfo) {
+		original_IMP_System_GetCPUInfo = dlsym(RTLD_NEXT, "IMP_System_GetCPUInfo");
+		if (!original_IMP_System_GetCPUInfo) {
+			IMP_LOG_ERR(TAG, "Error in `dlsym`: %s\n", dlerror());
+			return NULL;
 		}
 		// Start our thread prior to the original function when using DLSYM
 		executeControl("dlsym");
-		return original_SU_Base_GetModelNumber(modelNum);
+		return original_IMP_System_GetCPUInfo();
 	} else {
-		return -1;
+		return NULL;
 	}
-
+// GPT-4_EDIT-24-01-25-1705523426
 	// The following line should never be reached, but it's here for completeness.
-	return -1;
+	return NULL;
 }
