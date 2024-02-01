@@ -258,14 +258,13 @@ char *plugin_call(int command, const char *string) {
 	return NULL;
 }
 
-// GPT-4_EDIT-24-01-25-1705523426
+// GPT-4_EDIT-24-02-01-1706802683
 // Hook function with the same signature as IMP_System_GetCPUInfo
 // Avoiding the use of a constructor because launching our own
 // thread interferes with the host program's complex threading mechanisms.
 
 const char* IMP_System_GetCPUInfo() {
 	static const char* (*original_IMP_System_GetCPUInfo)(void) = NULL;
-	int loadedViaPreload = 0;
 	if (!original_IMP_System_GetCPUInfo) {
 		original_IMP_System_GetCPUInfo = dlsym(RTLD_NEXT, "IMP_System_GetCPUInfo");
 		if (!original_IMP_System_GetCPUInfo) {
@@ -278,7 +277,7 @@ const char* IMP_System_GetCPUInfo() {
 	} else {
 		return NULL;
 	}
-// GPT-4_EDIT-24-01-25-1705523426
+// GPT-4_EDIT-24-02-01-1706802683
 	// The following line should never be reached, but it's here for completeness.
 	return NULL;
 }
