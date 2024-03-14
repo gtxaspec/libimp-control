@@ -244,25 +244,7 @@ void executeControl(const char* loadingMethod) {
 	pthread_detach(thread);
 }
 
-// Alternate loading method, currently broken due to unstable API
-char *plugin_call(int command, const char *string) {
-	if (isLibraryInitialized) {
-	// Library is already initialized via dlsym, meow.
-	printf("Plugin already active\n");
-	return NULL;
-	}
-
-	executeControl("plugin_call");
-	// The command and string parameters are not used, but they are retained
-	// for compatibility with calls from elsewhere in the program
-	return NULL;
-}
-
-// GPT-4_EDIT-24-02-01-1706802683
 // Hook function with the same signature as IMP_System_GetCPUInfo
-// Avoiding the use of a constructor because launching our own
-// thread interferes with the host program's complex threading mechanisms.
-
 const char* IMP_System_GetCPUInfo() {
 	static const char* (*original_IMP_System_GetCPUInfo)(void) = NULL;
 	if (!original_IMP_System_GetCPUInfo) {
@@ -277,7 +259,6 @@ const char* IMP_System_GetCPUInfo() {
 	} else {
 		return NULL;
 	}
-// GPT-4_EDIT-24-02-01-1706802683
 	// The following line should never be reached, but it's here for completeness.
 	return NULL;
 }

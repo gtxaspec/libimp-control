@@ -1519,7 +1519,7 @@ char *setOSDcover(char *tokenPtr) {
 
     // Check for help request
     if (p != NULL && strcmp(p, "-h") == 0) {
-        return HELP_MESSAGE_SETOSD;
+        return HELP_MESSAGE_SETOSDCOVER;
     }
 
     if (p == NULL) return "Error: 'enable' not specified";
@@ -1548,22 +1548,31 @@ char *setOSDcover(char *tokenPtr) {
     int layer = atoi(p);
 
     p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-    if (p == NULL) return "Error: 'width' not specified";
-    int width = atoi(p);
+    if (p == NULL) return "Error: 'x0-width' not specified";
+    int x0width = atoi(p);
 
 	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-    if (p == NULL) return "Error: 'height' not specified";
-    int height = atoi(p);
+    if (p == NULL) return "Error: 'y0-height' not specified";
+    int y0height = atoi(p);
+
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    if (p == NULL) return "Error: 'x1-width' not specified";
+    int x1width = atoi(p);
+
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    if (p == NULL) return "Error: 'y1-height' not specified";
+    int y1height = atoi(p);
+
 
     if (enable == 1) {
         // Create and show the OSD region.
         IMPOSDRgnAttr rAttrCover;
         memset(&rAttrCover, 0, sizeof(rAttrCover));
         rAttrCover.type = OSD_REG_COVER;
-        rAttrCover.rect.p0.x = 0;
-        rAttrCover.rect.p0.y = 0;
-        rAttrCover.rect.p1.x = rAttrCover.rect.p0.x + width;
-        rAttrCover.rect.p1.y = rAttrCover.rect.p0.y + height;
+        rAttrCover.rect.p0.x = x0width;
+        rAttrCover.rect.p0.y = y0height;
+        rAttrCover.rect.p1.x = rAttrCover.rect.p0.x + x1width;
+        rAttrCover.rect.p1.y = rAttrCover.rect.p0.y + y1height;
         rAttrCover.fmt = PIX_FMT_BGRA;
         rAttrCover.data.coverData.color = color;
 

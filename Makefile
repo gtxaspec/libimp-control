@@ -1,6 +1,6 @@
 # Makefile for libimp_control.so
 
-#CROSS_COMPILE=mipsel-openipc-linux-musl-
+#CROSS_COMPILE=mipsel-linux-
 
 # Compiler settings
 CC := $(CROSS_COMPILE)gcc

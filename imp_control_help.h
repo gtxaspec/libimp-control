@@ -240,11 +240,13 @@
 #define HELP_MESSAGE_FISHEYE "Usage: <encChn> <enable>\n" \
 					"Fisheye correction effect may only be enabled or disabled before the channel is created."
 
-#define HELP_MESSAGE_SETOSD "Usage: setOSDcover <enable> <color> <layer> <width> <height>\n" \
+#define HELP_MESSAGE_SETOSDCOVER "Usage: setOSDcover <enable> <color> <layer> <x0-width> <y0-height> <x1-width> <y1-height>\n" \
                                 "enable: 1 (enable) or 0 (disable)\n" \
                                 "color: color code as string (e.g. 'OSD_BLACK')\n" \
-                                "layer: integer (layer number)\n" \
-								"width: stream width\n" \
-								"height: stream height"
+                                "layer: layer number\n" \
+								"x0-width: stream width\n" \
+								"y0-height: stream height\n" \
+								"x1-width: stream width\n" \
+								"y1-height: stream height"
 
 #endif // HELP_MESSAGES_H
