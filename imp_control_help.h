@@ -239,4 +239,12 @@
 
 #define HELP_MESSAGE_FISHEYE "Usage: <encChn> <enable>\n" \
 					"Fisheye correction effect may only be enabled or disabled before the channel is created."
+
+#define HELP_MESSAGE_SETOSD "Usage: setOSDcover <enable> <color> <layer> <width> <height>\n" \
+                                "enable: 1 (enable) or 0 (disable)\n" \
+                                "color: color code as string (e.g. 'OSD_BLACK')\n" \
+                                "layer: integer (layer number)\n" \
+								"width: stream width\n" \
+								"height: stream height"
+
 #endif // HELP_MESSAGES_H

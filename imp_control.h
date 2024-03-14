@@ -54,6 +54,7 @@ char *SetChnQpBounds(char *tokenPtr);
 char *SetChnQpIPDelta(char *tokenPtr);
 char *showOSD(char *tokenPtr);
 char *setOSDpos(char *tokenPtr);
+char *setOSDcover(char *tokenPtr);
 char *setOSDalpha(char *tokenPtr);
 char *ControlFisheyeStatus(char *tokenPtr);
 
@@ -87,7 +88,7 @@ static char *ShowHelp(char *tokenPtr) {
         "aovol                 ispmode               getafmetrics                             \n"
         "aogain                flicker               gettotalgain          help               \n"
         "aohpf                 autozoom              getaeattr             getchnencoder      \n"
-        "flip                  frontcrop             getimpversion                            \n"
+        "flip                  frontcrop             getimpversion         setosdcover        \n"
         "contrast              mask                  getcpuinfo                               \n"
         "brightness            whitebalance          getosdattr                               \n"
         "saturation            sensorfps             getosdgrpattr                            \n"
@@ -171,6 +172,7 @@ static struct CommandTableSub imp_ControlTable[] = {
 	{ "setosdalpha", &setOSDalpha},
 	{ "setosdshow", &showOSD},
 	{ "setosdpos", &setOSDpos},
+	{ "setosdcover", &setOSDcover},
 	// Test
 	{ "test", &Test},
 };

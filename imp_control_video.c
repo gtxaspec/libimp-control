@@ -1512,6 +1512,88 @@ char *setOSDpos(char *tokenPtr) {
 	return "OSD region position and size update scheduled";
 }
 
+static IMPRgnHandle privacyRgnHandle = -1; // Initialize with an invalid value
+
+char *setOSDcover(char *tokenPtr) {
+    char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+
+    // Check for help request
+    if (p != NULL && strcmp(p, "-h") == 0) {
+        return HELP_MESSAGE_SETOSD;
+    }
+
+    if (p == NULL) return "Error: 'enable' not specified";
+    int enable = atoi(p); // Convert string to integer
+
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    if (p == NULL) return "Error: 'color' not specified";
+    unsigned int color;
+    // Directly convert string to color value.
+    if (strcmp(p, "OSD_BLACK") == 0) {
+        color = OSD_BLACK;
+    } else if (strcmp(p, "OSD_WHITE") == 0) {
+        color = OSD_WHITE;
+    } else if (strcmp(p, "OSD_RED") == 0) {
+        color = OSD_RED;
+    } else if (strcmp(p, "OSD_GREEN") == 0) {
+        color = OSD_GREEN;
+    } else if (strcmp(p, "OSD_BLUE") == 0) {
+        color = OSD_BLUE;
+    } else {
+        return "Error: Invalid 'color' specified";
+    }
+
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    if (p == NULL) return "Error: 'layer' not specified";
+    int layer = atoi(p);
+
+    p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    if (p == NULL) return "Error: 'width' not specified";
+    int width = atoi(p);
+
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+    if (p == NULL) return "Error: 'height' not specified";
+    int height = atoi(p);
+
+    if (enable == 1) {
+        // Create and show the OSD region.
+        IMPOSDRgnAttr rAttrCover;
+        memset(&rAttrCover, 0, sizeof(rAttrCover));
+        rAttrCover.type = OSD_REG_COVER;
+        rAttrCover.rect.p0.x = 0;
+        rAttrCover.rect.p0.y = 0;
+        rAttrCover.rect.p1.x = rAttrCover.rect.p0.x + width;
+        rAttrCover.rect.p1.y = rAttrCover.rect.p0.y + height;
+        rAttrCover.fmt = PIX_FMT_BGRA;
+        rAttrCover.data.coverData.color = color;
+
+        if (privacyRgnHandle == -1) {
+            privacyRgnHandle = IMP_OSD_CreateRgn(NULL); // Create only if it does not exist
+        }
+        IMP_OSD_SetRgnAttr(privacyRgnHandle, &rAttrCover);
+
+        IMPOSDGrpRgnAttr grAttrCover;
+        memset(&grAttrCover, 0, sizeof(grAttrCover));
+        grAttrCover.show = 1; // Show region
+        grAttrCover.layer = layer;
+        grAttrCover.gAlphaEn = 0;
+        grAttrCover.fgAlhpa = 255;
+        IMP_OSD_RegisterRgn(privacyRgnHandle, 0, &grAttrCover);
+        IMP_OSD_SetGrpRgnAttr(privacyRgnHandle, 0, &grAttrCover);
+    } else if (enable == 0) {
+        // Hide and destroy the OSD region if it exists.
+        if (privacyRgnHandle != -1) {
+            IMP_OSD_ShowRgn(privacyRgnHandle, 0, 0);
+            IMP_OSD_UnRegisterRgn(privacyRgnHandle, 0);
+            IMP_OSD_DestroyRgn(privacyRgnHandle);
+            privacyRgnHandle = -1; // Reset the handle after destruction
+        }
+    } else {
+        return DEBUG_TEXT("Invalid 'enable' value.");
+    }
+    return DEBUG_TEXT("OSD region updated successfully");
+}
+
 char *Test(char *tokenPtr)
 {
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
