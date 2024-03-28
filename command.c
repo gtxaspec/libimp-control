@@ -244,6 +244,7 @@ void executeControl(const char* loadingMethod) {
 	pthread_detach(thread);
 }
 
+#if 0
 // Hook function with the same signature as IMP_System_GetCPUInfo
 const char* IMP_System_GetCPUInfo() {
 	static const char* (*original_IMP_System_GetCPUInfo)(void) = NULL;
@@ -261,4 +262,10 @@ const char* IMP_System_GetCPUInfo() {
 	}
 	// The following line should never be reached, but it's here for completeness.
 	return NULL;
+}
+#endif
+
+__attribute__((constructor))
+void library_constructor() {
+	executeControl("constructor");
 }
