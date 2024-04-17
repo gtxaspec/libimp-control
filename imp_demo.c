@@ -18,7 +18,7 @@ char *IMPTune(int fd, char *tokenPtr);
 // Function to demonstrate Mask settings
 char* MaskDemo() {
 	srand(time(NULL)); // Seed the random number generator
-	IMP_LOG_INFO(TAG, "Starting Mask Demo");
+	IMP_LOG_INFO(TAG, "Starting Mask Demo\n");
 
 	time_t start, now;
 	time(&start);
@@ -115,7 +115,7 @@ void rampControlValue(const char *controlName) {
 
 // Function to demonstrate White Balance settings
 char* WhitebalanceDemo() {
-	IMP_LOG_INFO(TAG, "Starting Whitebalance Demo");
+	IMP_LOG_INFO(TAG, "Starting Whitebalance Demo\n");
 	for (int wb = 1; wb <= 9; wb++) {
 		char command[256];
 		snprintf(command, sizeof(command), "whitebalance %d", wb % 10);
@@ -129,7 +129,7 @@ char* WhitebalanceDemo() {
 
 // Function to demonstrate Auto Zoom feature
 char* AutoZoomDemo() {
-	IMP_LOG_INFO(TAG, "Starting AutoZoom Demo");
+	IMP_LOG_INFO(TAG, "Starting AutoZoom Demo\n");
 
 	// Use integer steps to avoid floating-point precision issues
 	int zoomStep;
@@ -176,7 +176,7 @@ char* AutoZoomDemo() {
 
 // Function to demonstrate Front Crop feature
 char* FrontCropDemo() {
-	IMP_LOG_INFO(TAG, "Starting Front Crop Demo");
+	IMP_LOG_INFO(TAG, "Starting Front Crop Demo\n");
 
 	// Pan Down
 	for (int v = 0; v <= 350; v++) {
@@ -218,11 +218,11 @@ char* FrontCropDemo() {
 }
 
 void ispdemo() {
-IMP_LOG_INFO(TAG, "Starting ISP Mode demo");
-IMP_LOG_INFO(TAG, "Setting night mode");
+IMP_LOG_INFO(TAG, "Starting ISP Mode demo\n");
+IMP_LOG_INFO(TAG, "Setting night mode\n");
 IMP_ISP_Tuning_SetISPRunningMode(1);
 sleep(2);
-IMP_LOG_INFO(TAG, "Setting day mode");
+IMP_LOG_INFO(TAG, "Setting day mode\n");
 IMP_ISP_Tuning_SetISPRunningMode(0);
 }
 
@@ -234,7 +234,7 @@ char* fullDemo(char *tokenPtr) {
 {
 	return HELP_MESSAGE_FULLDEMO;
 }
-	IMP_LOG_INFO(TAG, "Starting Full Demo");
+	IMP_LOG_INFO(TAG, "Starting Full Demo\n");
 	const char *controls[] = {"brightness", "contrast", "saturation", "sharpness", "sinter", "temper", "aecomp", "dpc", "drc", "hue"};
 	int numControls = sizeof(controls) / sizeof(controls[0]);
 
@@ -258,6 +258,6 @@ char* fullDemo(char *tokenPtr) {
 		rampControlValue(controls[i]);
 		IMP_LOG_INFO(TAG, "Ramping %s complete\n", controls[i]);
 	}
-	IMP_LOG_ERR(TAG, "Demo complete, restart for best performance");
+	IMP_LOG_ERR(TAG, "Demo complete, restart for best performance\n");
 	return "Demo complete, restart for best performance.";
 }
