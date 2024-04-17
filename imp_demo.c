@@ -242,11 +242,11 @@ char* fullDemo(char *tokenPtr) {
 	sleep(1);
 	WhitebalanceDemo();
 	sleep(1);
-	FrontCropDemo();
-	sleep(1);
 	if (p != NULL && strcmp(p, "-f") == 0)
 	{
 		// Autozoom requires performant SOCs for now
+		FrontCropDemo();
+		sleep(1);
 		AutoZoomDemo();
 		sleep(1);
 	}
