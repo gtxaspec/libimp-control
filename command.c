@@ -221,6 +221,9 @@ void executeControl(const char* loadingMethod) {
 	// Set the library as initialized
 	isLibraryInitialized = 1;
 
+	// Make sure everything else doesn't inherit LD_PRELOAD
+	unsetenv("LD_PRELOAD");
+
 	printf("LIBIMP_CONTROL Version: %s %s\n", VERSION, loadingMethod);
 	IMP_LOG_INFO(TAG, "Version: %s %s\n", VERSION, loadingMethod);
 
