@@ -1369,8 +1369,7 @@ char *Gamma(char *tokenPtr) {
 // END GET ONLY
 
 char *setOSDalpha(char *tokenPtr) {
-	int grpNum = 0;
-	int handle = 0;
+
 	// Parse input arguments for alpha_en
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 
@@ -1383,19 +1382,43 @@ char *setOSDalpha(char *tokenPtr) {
 
 	int fg_alpha = atoi(p); // Parse as decimal value
 
-	// Initialize OSD group region attributes
+	// Extract the region handle from the token
+	char *pHandle = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	int handle = 0;
+
+	// If no handle specifed, use 0 as default, otherwise use specified handle
+	if (pHandle == NULL) {
+		handle = 0;
+	} else {
+		handle = atoi(pHandle);
+	}
+
+	// Extract the group number from the token
+	char *pGrpNum = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	int grpNum;
+
+	// If no group specifed, use 0 as default, otherwise use specified group
+	if (pGrpNum == NULL) {
+		grpNum = 0;
+	} else {
+		grpNum = atoi(pGrpNum);
+	}
+
+	// Get the OSD group region attributes
 	IMPOSDGrpRgnAttr grpRgnAttr;
+	int ret = IMP_OSD_GetGrpRgnAttr(handle, grpNum, &grpRgnAttr);
+	if (ret != 0) {
+		snprintf(response, sizeof(response), "Error: Failed to get group region attributes for handle %d, group %d.", handle, grpNum);
+		return response;
+	}
+
+	// Update values
 	grpRgnAttr.show = 1; // Set to show the region
 	grpRgnAttr.gAlphaEn = 1; // Alpha enable
 	grpRgnAttr.fgAlhpa = fg_alpha;  // Foreground Alpha (0-255)
-	grpRgnAttr.bgAlhpa = 0;  // Background Alpha (0-255)
-	grpRgnAttr.offPos = (IMPPoint){0, 0}; // Set offset position
-	grpRgnAttr.scalex = 0; // No scaling in x
-	grpRgnAttr.scaley = 0; // No scaling in y
-	grpRgnAttr.layer = 0; // Set display layer
 
 	// Assuming handle and grpNum are defined elsewhere and accessible here
-	 int ret = IMP_OSD_SetGrpRgnAttr(handle, grpNum, &grpRgnAttr);
+	 ret = IMP_OSD_SetGrpRgnAttr(handle, grpNum, &grpRgnAttr);
 	if (ret != 0) {
 		return "Failed to set OSD group region attributes";
 	}
