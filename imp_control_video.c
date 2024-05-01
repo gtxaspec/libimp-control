@@ -1333,7 +1333,7 @@ char *GetOSDGroupRegionAttributes(char *tokenPtr) {
 			 grpRgnAttr.fgAlhpa,
 			 grpRgnAttr.bgAlhpa,
 			 grpRgnAttr.layer);*/
-	snprintf(response, sizeof(response), "%d %d %d %d %d%f %f %d %d %d %d",
+	snprintf(response, sizeof(response), "%d %d %d %d %d %f %f %d %d %d %d",
 			 handle,
 			 grpNum,
 			 grpRgnAttr.show,
