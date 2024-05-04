@@ -257,6 +257,13 @@ typedef struct {
 
 extern int IMP_ISP_Tuning_GetAeAttr(IMPISPAEAttr *ae);
 
+//OSD position hook data
+typedef struct {
+	int active; 
+	unsigned int x;
+	unsigned int y;
+} IMPOSDPosHook;
+
 /*
 todo:
 DPS // T20 only
