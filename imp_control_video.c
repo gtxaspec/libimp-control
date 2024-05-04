@@ -1580,7 +1580,7 @@ char *getOSD(char *tokenPtr) {
 
 char *setOSD(char *tokenPtr) {
 
-	char cmd[10] = {0};
+	char cmd[16] = {0};
 
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	
