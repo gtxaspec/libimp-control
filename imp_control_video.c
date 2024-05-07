@@ -1446,7 +1446,12 @@ char *showOSD(char *tokenPtr) {
 
 // Global variables for new coordinates, width, height and a flag to check if they are set
 #define NUM_REGIONS 4
-IMPOSDPosHook posHook[NUM_REGIONS] = {0};
+IMPOSDPosHook posHook[NUM_REGIONS] = {
+	{-1,-1,8},
+	{-1,-1,1},
+	{-1,-1,2},
+	{-1,-1,4}
+};
 
 // External handle
 extern IMPRgnHandle handle;
@@ -1465,25 +1470,80 @@ int IMP_OSD_SetRgnAttr(IMPRgnHandle handle, IMPOSDRgnAttr *prAttr) {
 		}
 	}
 
-	if (posHook[handle].active == 1 && prAttr != NULL) {
+	if (prAttr != NULL) {
+
 		// Temporarily save original coordinates and size
 		int origX = prAttr->rect.p0.x;
 		int origY = prAttr->rect.p0.y;
 		int origWidth = prAttr->rect.p1.x - origX + 1;
 		int origHeight = prAttr->rect.p1.y - origY + 1;
 
-		// Set new coordinates and size
-		prAttr->rect.p0.x = posHook[handle].x;
-		prAttr->rect.p0.y = posHook[handle].y;
+		//get image size
+		IMPEncoderChnAttr chnAttr;
+		int ret = IMP_Encoder_GetChnAttr(0, &chnAttr);
+		if (ret == 0) {
 
-		prAttr->rect.p1.x = posHook[handle].x + origWidth - 1;
-		prAttr->rect.p1.y = posHook[handle].y + origHeight - 1;
+			switch( posHook[handle].position ) {
+				case 0: 
+					if( posHook[handle].x > -1 && posHook[handle].y > -1 ) {
+
+						// Set new coordinates and size
+						prAttr->rect.p0.x = posHook[handle].x;
+						prAttr->rect.p0.y = posHook[handle].y;
+					}
+					break;
+				case 1: 
+						// TOP
+						prAttr->rect.p0.x = chnAttr.encAttr.uWidth / 2 - origWidth / 2;
+						prAttr->rect.p0.y = 10;
+					break;
+				case 2: 
+						// TOP RIGHT
+						prAttr->rect.p0.x = chnAttr.encAttr.uWidth - 15 - origWidth;
+						prAttr->rect.p0.y = 10;
+					break;	
+				case 3: 
+						// RIGHT
+						prAttr->rect.p0.x = chnAttr.encAttr.uWidth - 15 - origWidth;
+						prAttr->rect.p0.y = chnAttr.encAttr.uHeight / 2 - origHeight / 2; 
+					break;
+				case 4: 
+						// BOTTOM RIGHT
+						prAttr->rect.p0.x = chnAttr.encAttr.uWidth - 15 - origWidth;
+						prAttr->rect.p0.y = chnAttr.encAttr.uHeight - 10 - origHeight; 
+					break;
+				case 5: 
+						// BOTTOM
+						prAttr->rect.p0.x = chnAttr.encAttr.uWidth / 2 - origWidth / 2;
+						prAttr->rect.p0.y = chnAttr.encAttr.uHeight - 10 - origHeight; 
+					break;
+				case 6: 
+						// BOTTOM LEFT
+						prAttr->rect.p0.x = 15;
+						prAttr->rect.p0.y = chnAttr.encAttr.uHeight - 10 - origHeight; 
+					break;		
+				case 7: 
+						// LEFT
+						prAttr->rect.p0.x = 15;
+						prAttr->rect.p0.y = chnAttr.encAttr.uHeight / 2 - origHeight / 2; 
+					break;								
+				case 8: 
+						// TOP LEFT
+						prAttr->rect.p0.x = 15;
+						prAttr->rect.p0.y = 10;
+					break;														
+			}
+
+			prAttr->rect.p1.x = prAttr->rect.p0.x + origWidth - 1;
+			prAttr->rect.p1.y = prAttr->rect.p0.y + origHeight - 1;			
+		}
 
 		// Call the original function with modified coordinates and size
 		int result = original_IMP_OSD_SetRgnAttr(handle, prAttr);
-
 		return result;
 	}
+
+	printf("\n");
 
 	// Call the original function without modification
 	return original_IMP_OSD_SetRgnAttr(handle, prAttr);
@@ -1514,7 +1574,6 @@ char *setOSDpos(char *tokenPtr) {
 	// set the new top-left coordinates and size in global variable posHook
 	if( handle >= 0 && handle < NUM_REGIONS ) {
 
-		posHook[handle].active = 1;
 		posHook[handle].x = x;
 		posHook[handle].y = y;
 	}
@@ -1568,12 +1627,13 @@ char *getOSD(char *tokenPtr) {
 	//set alpha to 255 if disabled
 	if( grpRgnAttr.gAlphaEn != 1 ) grpRgnAttr.fgAlhpa = 255;
 	
-	snprintf(response, sizeof(response), "%d %d %d %d %d",
+	snprintf(response, sizeof(response), "%d %d %d %d %d %d",
 			 handle,
 			 grpRgnAttr.fgAlhpa,
 			 grpRgnAttr.show, 
 			 rgnAttr.rect.p0.x, 
-			 rgnAttr.rect.p0.y);
+			 rgnAttr.rect.p0.y,
+			 posHook[handle].position);
 			 
 	return response;
 }
@@ -1613,6 +1673,12 @@ char *setOSD(char *tokenPtr) {
 	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	if (p == NULL) return "Error: y coordinate not specified";
 	int y = atoi(p);
+
+	// extract positioning from token 
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p != NULL) {
+		posHook[handle].position = atoi(p);
+	}
 
 	snprintf(cmd, sizeof(cmd), "%d %d %d", handle, x, y);
 	setOSDpos(cmd); 
