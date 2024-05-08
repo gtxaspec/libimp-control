@@ -104,57 +104,72 @@
 		"  frmRateDen: Frame rate number denominator.  This value may be omited and the default value of 1 will be used."
 
 #define HELP_MESSAGE_AUTOZOOM "Usage: SetAutoZoom [chan] [scaler_enable] [scaler_outwidth] [scaler_outheight] [crop_enable] [crop_left] [crop_top] [crop_width] [crop_height]\n" \
-						"chan: Channel number\n" \
-						"scaler_enable: 0 (disable) or 1 (enable) scaler\n" \
-						"scaler_outwidth, scaler_outheight: Scaler output dimensions\n" \
-						"crop_enable: 0 (disable) or 1 (enable) crop\n" \
-						"crop_left, crop_top: Crop region start coordinates\n" \
-						"crop_width, crop_height: Crop region dimensions\n" \
-						"WARNING: AutoZoom requires increased performance, recommended 240Mhz ISP Clock"
+		"chan: Channel number\n" \
+		"scaler_enable: 0 (disable) or 1 (enable) scaler\n" \
+		"scaler_outwidth, scaler_outheight: Scaler output dimensions\n" \
+		"crop_enable: 0 (disable) or 1 (enable) crop\n" \
+		"crop_left, crop_top: Crop region start coordinates\n" \
+		"crop_width, crop_height: Crop region dimensions\n" \
+		"WARNING: AutoZoom requires increased performance, recommended 240Mhz ISP Clock"
 
 #define HELP_MESSAGE_FRONTCROP "Usage: FrontCrop [enable] [top] [left] [width] [height]\n" \
-						"Enable: 0 (disable) or 1 (enable)\n" \
-						"Top, Left, Width, Height: Integer values specifying crop region"
+		"Enable: 0 (disable) or 1 (enable)\n" \
+		"Top, Left, Width, Height: Integer values specifying crop region"
 
 #define HELP_MESSAGE_MASK "Usage: Mask [channel] [mask_en] [mask_pos_top] [mask_pos_left] [mask_width] [mask_height] [Red] [Green] [Blue]\n" \
-			   "channel: Channel number\n" \
-			   "mask_en: 0 (disable) or 1 (enable) mask\n" \
-			   "mask_pos_top, mask_pos_left: Mask position coordinates\n" \
-			   "mask_width, mask_height: Mask dimensions\n" \
-			   "Red, Green, Blue: Mask color values (0-255)"
+		"channel: Channel number\n" \
+		"mask_en: 0 (disable) or 1 (enable) mask\n" \
+		"mask_pos_top, mask_pos_left: Mask position coordinates\n" \
+		"mask_width, mask_height: Mask dimensions\n" \
+		"Red, Green, Blue: Mask color values (0-255)"
 
 #define HELP_MESSAGE_GETOSDRGNATTR "Usage: GetOSDRegionAttributes [RegionHandle]\n" \
-			"RegionHandle: The handle identifier of the OSD region.\n" \
-			"Description: Retrieves attributes for a specified OSD region, including type, rectangle dimensions, and format.\n" \
-			"Returns: A detailed description of the OSD region's attributes (Type, Rectangle coordinates and dimensions, Format), or an error message if the region handle is not provided or invalid."
-
+		"RegionHandle: The handle identifier of the OSD region.\n" \
+		"Description: Retrieves attributes for a specified OSD region, including type, rectangle dimensions, and format.\n" \
+		"Returns: A detailed description of the OSD region's attributes (Type, Rectangle coordinates and dimensions, Format), or an error message if the region handle is not provided or invalid."
 
 #define HELP_MESSAGE_GETOSDGRPRGNATTR "Usage: GetOSDGroupRegionAttributes [RegionHandle] [GroupNumber]\n" \
-		   "RegionHandle: The handle identifier of the OSD region.\n" \
-		   "GroupNumber: The number identifier of the OSD group.\n" \
-		   "Description: Retrieves attributes for a specified OSD region within a specific group, including visibility, position, scaling, alpha settings, and layer.\n" \
-		   "Returns: A detailed description of the OSD group region's attributes (Visibility, Offset Position, Scaling, Alpha Settings, Layer), or an error message if the region handle or group number is not provided or invalid."
+		"RegionHandle: The handle identifier of the OSD region.\n" \
+		"GroupNumber: The number identifier of the OSD group.\n" \
+		"Description: Retrieves attributes for a specified OSD region within a specific group, including visibility, position, scaling, alpha settings, and layer.\n" \
+		"Returns: A detailed description of the OSD group region's attributes (Visibility, Offset Position, Scaling, Alpha Settings, Layer), or an error message if the region handle or group number is not provided or invalid."
 
-#define HELP_MESSAGE_SETOSDALPHA "Usage: setOSDalpha [fg_alpha]\n" \
-			"fg_alpha: Foreground alpha value (0-255).\n" \
-			"Description: Sets the alpha attributes for a specified OSD group region. This includes enabling/disabling alpha and setting the foreground alpha level.\n" \
-			"Note: Background alpha is set to 0 by default. The function assumes that region handle and group number are predefined.\n" \
-			"Returns: Confirmation message on successful setting of attributes, or an error message in case of failure."
+#define HELP_MESSAGE_SETOSDALPHA "Usage: setOSDalpha [RegionHandle] [fgAlpha]\n" \
+		"RegionHandle: The handle identifier of the OSD region.\n" \
+		"fgAlpha: Foreground alpha value (0-255).\n" \
+		"Description: Sets the alpha attributes for a specified OSD group region. This includes enabling/disabling alpha and setting the foreground alpha level.\n" \
+		"Returns: Confirmation message on successful setting of attributes, or an error message in case of failure."
 
-#define HELP_MESSAGE_SHOWOSD "Usage: showOSD [flag]\n" \
-			"flag: '1' or 'show' to display the OSD, '0' or 'hide' to hide the OSD.\n" \
-			"Description: Controls the visibility of the OSD (On-Screen Display) in a specific OSD group. The function sets the OSD to be visible or hidden based on the given flag.\n" \
-			"Note: This function assumes that the OSD group number and region handle are predefined.\n" \
-			"Returns: Confirmation message on successful change of visibility, or an error message in case of failure or invalid input."
+#define HELP_MESSAGE_SHOWOSD "Usage: showOSD [RegionHandle] [flag]\n" \
+		"RegionHandle: The handle identifier of the OSD region.\n" \
+		"flag: '1' or 'show' to display the OSD, '0' or 'hide' to hide the OSD.\n" \
+		"Description: Controls the visibility of the OSD (On-Screen Display) in a specific OSD group. The function sets the OSD to be visible or hidden based on the given flag.\n" \
+		"Returns: Confirmation message on successful change of visibility, or an error message in case of failure or invalid input."
 
-#define HELP_MESSAGE_SETOSD_POS "Usage: setOSDpos [x] [y] [width] [height]\n" \
-			   "x: X-coordinate for the top-left corner of the OSD region\n" \
-			   "y: Y-coordinate for the top-left corner of the OSD region\n" \
-			   "width: Width of the OSD region\n" \
-			   "height: Height of the OSD region\n" \
-			   "Description: Sets the position and size of the OSD (On-Screen Display) region. The function updates the OSD region's top-left coordinates and its dimensions.\n" \
-			   "Note: This function will schedule the update of the OSD region's position and size. The actual update is performed asynchronously.\n" \
-			   "Returns: Confirmation message indicating that the position and size update is scheduled, or an error message in case of missing parameters."
+#define HELP_MESSAGE_SETOSD_POS "Usage: setOSDpos [RegionHandle] [x] [y]\n" \
+		"RegionHandle: The handle identifier of the OSD region.\n" \
+		"x: X-coordinate for the top-left corner of the OSD region\n" \
+		"y: Y-coordinate for the top-left corner of the OSD region\n" \
+		"Description: Sets the position of the OSD (On-Screen Display) region. The function updates the OSD region's top-left coordinates.\n" \
+		"Returns: Confirmation message indicating that the position update is done, or an error message in case of missing parameters."
+
+#define HELP_MESSAGE_GETOSD "Usage: getOSD [RegionHandle]\n" \
+		"RegionHandle: The handle identifier of the OSD region.\n" \
+		"fgAlpha: Foreground alpha value (0-255).\n" \
+		"show: show or hide the region.\n" \
+		"x: X-coordinate for the top-left corner of the OSD region\n" \
+		"y: Y-coordinate for the top-left corner of the OSD region\n" \
+		"Description: Gets the show flag, alpha attributes and position information for a specified OSD group region.\n" \
+		"Returns: Confirmation message on successful setting of attributes, or an error message in case of failure."
+
+#define HELP_MESSAGE_SETOSD "Usage: setOSD [RegionHandle] [show] [fgAlpha] [x] [y]\n" \
+		"RegionHandle: The handle identifier of the OSD region.\n" \
+		"fgAlpha: Foreground alpha value (0-255).\n" \
+		"show: show or hide the region.\n" \
+		"x: X-coordinate for the top-left corner of the OSD region\n" \
+		"y: Y-coordinate for the top-left corner of the OSD region\n" \
+		"Description: Sets the show flag, alpha attributes and position information for a specified OSD group region. This includes enabling/disabling alpha and setting the foreground alpha level.\n" \
+		"Returns: Confirmation message on successful setting of attributes, or an error message in case of failure."
 
 #define HELP_MESSAGE_HPF "Usage: aihpf [0/1]\n" \
 		"Option:\n" \

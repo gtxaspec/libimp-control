@@ -1333,7 +1333,7 @@ char *GetOSDGroupRegionAttributes(char *tokenPtr) {
 			 grpRgnAttr.fgAlhpa,
 			 grpRgnAttr.bgAlhpa,
 			 grpRgnAttr.layer);*/
-	snprintf(response, sizeof(response), "%d %d %d %d %d%f %f %d %d %d %d",
+	snprintf(response, sizeof(response), "%d %d %d %d %d %f %f %d %d %d %d",
 			 handle,
 			 grpNum,
 			 grpRgnAttr.show,
@@ -1369,48 +1369,63 @@ char *Gamma(char *tokenPtr) {
 // END GET ONLY
 
 char *setOSDalpha(char *tokenPtr) {
-	int grpNum = 0;
-	int handle = 0;
-	// Parse input arguments for alpha_en
-	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 
-	// Parse input arguments for fg_alpha
-	if (p == NULL) return DEBUG_TEXT("Error: Foreground alpha not specified");
+	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 
 	if (p != NULL && strcmp(p, "-h") == 0) {
 		return HELP_MESSAGE_SETOSDALPHA;
 	}
 
-	int fg_alpha = atoi(p); // Parse as decimal value
+	// extract handle from token 
+	if (p == NULL) return DEBUG_TEXT("Error: region/handle not specified");
+	IMPRgnHandle handle = atoi(p);
 
-	// Initialize OSD group region attributes
-	IMPOSDGrpRgnAttr grpRgnAttr;
-	grpRgnAttr.show = 1; // Set to show the region
-	grpRgnAttr.gAlphaEn = 1; // Alpha enable
-	grpRgnAttr.fgAlhpa = fg_alpha;  // Foreground Alpha (0-255)
-	grpRgnAttr.bgAlhpa = 0;  // Background Alpha (0-255)
-	grpRgnAttr.offPos = (IMPPoint){0, 0}; // Set offset position
-	grpRgnAttr.scalex = 0; // No scaling in x
-	grpRgnAttr.scaley = 0; // No scaling in y
-	grpRgnAttr.layer = 0; // Set display layer
-
-	// Assuming handle and grpNum are defined elsewhere and accessible here
-	 int ret = IMP_OSD_SetGrpRgnAttr(handle, grpNum, &grpRgnAttr);
-	if (ret != 0) {
-		return "Failed to set OSD group region attributes";
+	// extract alpha from token
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p == NULL) return DEBUG_TEXT("Error: Foreground alpha not specified");
+	int fgAlhpa = atoi(p); 
+	if( fgAlhpa < 0 || fgAlhpa > 255 ) {
+		return "Invalid alpha value, Out of range [0-255].";
 	}
 
-	return "OSD group region attributes set successfully";
+	// get current OSD group region attributes
+	IMPOSDGrpRgnAttr grpRgnAttr;
+	int ret = IMP_OSD_GetGrpRgnAttr(handle, 0, &grpRgnAttr);
+	if (ret != 0) {
+		snprintf(response, sizeof(response), "Error: Failed to get group region attributes for handle %d, group %d.", handle, 0);
+		return response;
+	}
+
+	// update values
+	grpRgnAttr.show = 1; 			// set to show the region
+	grpRgnAttr.gAlphaEn = 1; 		// alpha enable
+	grpRgnAttr.fgAlhpa = fgAlhpa;  	// foreground alpha (0-255)
+
+	// set current OSD group region attributes
+	 ret = IMP_OSD_SetGrpRgnAttr(handle, 0, &grpRgnAttr);
+	if (ret != 0) {
+		snprintf(response, sizeof(response), "Error: Failed to set group region attributes for handle %d, group %d.", handle, 0);
+		return response;
+	}
+
+	return "OSD region alpha attribute set successfully";
 }
 
 char *showOSD(char *tokenPtr) {
-	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-	if (p == NULL) return DEBUG_TEXT("Error: Show/Hide flag not specified");
 
+	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	
 	if (p != NULL && strcmp(p, "-h") == 0) {
 		return HELP_MESSAGE_SHOWOSD;
-		}
+	}
 
+	// extract handle from token 
+	if (p == NULL) return DEBUG_TEXT("Error: region/handle not specified");
+	IMPRgnHandle handle = atoi(p);
+
+	// extract show/hide flag from token 
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p == NULL) return DEBUG_TEXT("Error: Show/Hide flag not specified");
 	int showFlag = 0;
 	if (strcmp(p, "1") == 0 || strcmp(p, "show") == 0) {
 		showFlag = 1; // Show OSD
@@ -1420,40 +1435,29 @@ char *showOSD(char *tokenPtr) {
 		return "Error: Invalid Show/Hide flag";
 	}
 
-	int grpNum = 0;
-	int handle = 0;
-
-	// Set the OSD group region attributes
-	int ret = IMP_OSD_ShowRgn(handle, grpNum, showFlag);
+	// set the OSD group region attributes
+	int ret = IMP_OSD_ShowRgn(handle, 0, showFlag);
 	if (ret != 0) {
 		return "Failed to set OSD group region attributes";
 	}
 
-	return "OSD group region attributes set successfully";
+	return "OSD region show flag set successfully";
 }
 
 // Global variables for new coordinates, width, height and a flag to check if they are set
-int newTopLeftX = -1;
-int newTopLeftY = -1;
-int newWidth = -1;
-int newHeight = -1;
-int coordinatesSet = 0; // Flag to indicate new coordinates are set
+#define NUM_REGIONS 4
+IMPOSDPosHook posHook[NUM_REGIONS] = {
+	{-1,-1,8},
+	{-1,-1,1},
+	{-1,-1,2},
+	{-1,-1,4}
+};
 
 // External handle
 extern IMPRgnHandle handle;
 
 // Define a pointer for the original function
 int (*original_IMP_OSD_SetRgnAttr)(IMPRgnHandle, IMPOSDRgnAttr*);
-
-// Function to set new top-left coordinates (x, y) and size (width, height)
-void setNewCoordinatesAndSize(int topLeftX, int topLeftY) {
-	newTopLeftX = topLeftX;
-	newTopLeftY = topLeftY;
-
-	coordinatesSet = 1; // Indicate that new coordinates and size are set
-	IMP_LOG_INFO(TAG, "New Coordinates and Size Set: Top-Left (x: %d, y: %d)\n",
-		   newTopLeftX, newTopLeftY);
-}
 
 // Hook function
 int IMP_OSD_SetRgnAttr(IMPRgnHandle handle, IMPOSDRgnAttr *prAttr) {
@@ -1466,25 +1470,80 @@ int IMP_OSD_SetRgnAttr(IMPRgnHandle handle, IMPOSDRgnAttr *prAttr) {
 		}
 	}
 
-	if (coordinatesSet && prAttr != NULL) {
+	if (prAttr != NULL) {
+
 		// Temporarily save original coordinates and size
 		int origX = prAttr->rect.p0.x;
 		int origY = prAttr->rect.p0.y;
 		int origWidth = prAttr->rect.p1.x - origX + 1;
 		int origHeight = prAttr->rect.p1.y - origY + 1;
 
-		// Set new coordinates and size
-		prAttr->rect.p0.x = newTopLeftX;
-		prAttr->rect.p0.y = newTopLeftY;
+		//get image size
+		IMPEncoderChnAttr chnAttr;
+		int ret = IMP_Encoder_GetChnAttr(0, &chnAttr);
+		if (ret == 0) {
 
-		prAttr->rect.p1.x = newTopLeftX + origWidth - 1;
-		prAttr->rect.p1.y = newTopLeftY + origHeight - 1;
+			switch( posHook[handle].position ) {
+				case 0: 
+					if( posHook[handle].x > -1 && posHook[handle].y > -1 ) {
+
+						// Set new coordinates and size
+						prAttr->rect.p0.x = posHook[handle].x;
+						prAttr->rect.p0.y = posHook[handle].y;
+					}
+					break;
+				case 1: 
+						// TOP
+						prAttr->rect.p0.x = chnAttr.encAttr.uWidth / 2 - origWidth / 2;
+						prAttr->rect.p0.y = 10;
+					break;
+				case 2: 
+						// TOP RIGHT
+						prAttr->rect.p0.x = chnAttr.encAttr.uWidth - 15 - origWidth;
+						prAttr->rect.p0.y = 10;
+					break;	
+				case 3: 
+						// RIGHT
+						prAttr->rect.p0.x = chnAttr.encAttr.uWidth - 15 - origWidth;
+						prAttr->rect.p0.y = chnAttr.encAttr.uHeight / 2 - origHeight / 2; 
+					break;
+				case 4: 
+						// BOTTOM RIGHT
+						prAttr->rect.p0.x = chnAttr.encAttr.uWidth - 15 - origWidth;
+						prAttr->rect.p0.y = chnAttr.encAttr.uHeight - 10 - origHeight; 
+					break;
+				case 5: 
+						// BOTTOM
+						prAttr->rect.p0.x = chnAttr.encAttr.uWidth / 2 - origWidth / 2;
+						prAttr->rect.p0.y = chnAttr.encAttr.uHeight - 10 - origHeight; 
+					break;
+				case 6: 
+						// BOTTOM LEFT
+						prAttr->rect.p0.x = 15;
+						prAttr->rect.p0.y = chnAttr.encAttr.uHeight - 10 - origHeight; 
+					break;		
+				case 7: 
+						// LEFT
+						prAttr->rect.p0.x = 15;
+						prAttr->rect.p0.y = chnAttr.encAttr.uHeight / 2 - origHeight / 2; 
+					break;								
+				case 8: 
+						// TOP LEFT
+						prAttr->rect.p0.x = 15;
+						prAttr->rect.p0.y = 10;
+					break;														
+			}
+
+			prAttr->rect.p1.x = prAttr->rect.p0.x + origWidth - 1;
+			prAttr->rect.p1.y = prAttr->rect.p0.y + origHeight - 1;			
+		}
 
 		// Call the original function with modified coordinates and size
 		int result = original_IMP_OSD_SetRgnAttr(handle, prAttr);
-
 		return result;
 	}
+
+	printf("\n");
 
 	// Call the original function without modification
 	return original_IMP_OSD_SetRgnAttr(handle, prAttr);
@@ -1493,23 +1552,138 @@ int IMP_OSD_SetRgnAttr(IMPRgnHandle handle, IMPOSDRgnAttr *prAttr) {
 char *setOSDpos(char *tokenPtr) {
 
 	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
-
-	// Check for help request
+	
 	if (p != NULL && strcmp(p, "-h") == 0) {
 		return HELP_MESSAGE_SETOSD_POS;
 	}
 
+	// extract handle from token 
+	if (p == NULL) return DEBUG_TEXT("Error: region/handle not specified");
+	IMPRgnHandle handle = atoi(p);
+
+	// extract x from token 
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	if (p == NULL) return DEBUG_TEXT("Error: x coordinate not specified");
 	int x = atoi(p);
 
+	// extract y from token 
 	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
 	if (p == NULL) return DEBUG_TEXT("Error: y coordinate not specified");
 	int y = atoi(p);
 
-	// Set the new top-left coordinates and size
-	setNewCoordinatesAndSize(x, y);
+	// set the new top-left coordinates and size in global variable posHook
+	if( handle >= 0 && handle < NUM_REGIONS ) {
 
-	return "OSD region position and size update scheduled";
+		posHook[handle].x = x;
+		posHook[handle].y = y;
+	}
+
+	// trigger an update, this will call the hooked function and inject new position
+	IMPOSDRgnAttr rgnAttr;
+	int ret = IMP_OSD_GetRgnAttr(handle, &rgnAttr);
+	if (ret != 0) {
+		snprintf(response, sizeof(response), "Error: Failed to get attributes for region handle %d.", handle);
+		return response;
+	}
+
+	ret = IMP_OSD_SetRgnAttr(handle, &rgnAttr);
+	if (ret != 0) {
+		snprintf(response, sizeof(response), "Error: Failed to set attributes for region handle %d.", handle);
+		return response;
+	}
+
+	snprintf(response, sizeof(response), "OSD region position for region %d successfully updated to x:%d, y:%d.", handle, x, y);
+	return response;
+}
+
+char *getOSD(char *tokenPtr) {
+
+	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	
+	if (p != NULL && strcmp(p, "-h") == 0) {
+		return HELP_MESSAGE_GETOSD;
+	}
+
+	// extract handle from token 
+	if (p == NULL) return DEBUG_TEXT("Error: region/handle not specified");
+	IMPRgnHandle handle = atoi(p);
+
+	// get current OSD group region attributes
+	IMPOSDGrpRgnAttr grpRgnAttr;
+	int ret = IMP_OSD_GetGrpRgnAttr(handle, 0, &grpRgnAttr);
+	if (ret != 0) {
+		snprintf(response, sizeof(response), "Error: Failed to get group region attributes for handle %d, group %d.", handle, 0);
+		return response;
+	}
+
+	// get current OSD region attributes
+	IMPOSDRgnAttr rgnAttr;
+	ret = IMP_OSD_GetRgnAttr(handle, &rgnAttr);
+	if (ret != 0) {
+		snprintf(response, sizeof(response), "Error: Failed to get attributes for region handle %d.", handle);
+		return response;
+	}
+
+	//set alpha to 255 if disabled
+	if( grpRgnAttr.gAlphaEn != 1 ) grpRgnAttr.fgAlhpa = 255;
+	
+	snprintf(response, sizeof(response), "%d %d %d %d %d %d",
+			 handle,
+			 grpRgnAttr.fgAlhpa,
+			 grpRgnAttr.show, 
+			 rgnAttr.rect.p0.x, 
+			 rgnAttr.rect.p0.y,
+			 posHook[handle].position);
+			 
+	return response;
+}
+
+char *setOSD(char *tokenPtr) {
+
+	char cmd[16] = {0};
+
+	char *p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	
+	if (p != NULL && strcmp(p, "-h") == 0) {
+		return HELP_MESSAGE_SETOSD;
+	}
+
+	// extract handle from token 
+	if (p == NULL) return "Error: region/handle not specified";
+	IMPRgnHandle handle = atoi(p);
+
+	// extract alpha from token
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p == NULL) return "Error: alpha not specified";
+	snprintf(cmd, sizeof(cmd), "%d %d", handle, atoi(p));
+	setOSDalpha(cmd);
+
+	// extract show/hide flag from token 
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p == NULL) return "Error: Show/Hide flag not specified";
+	snprintf(cmd, sizeof(cmd), "%d %d", handle, atoi(p));
+	showOSD(cmd); 
+
+	// extract x from token 
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p == NULL) return "Error: x coordinate not specified";
+	int x = atoi(p);
+
+	// extract y from token 
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p == NULL) return "Error: y coordinate not specified";
+	int y = atoi(p);
+
+	// extract positioning from token 
+	p = strtok_r(NULL, " \t\r\n", &tokenPtr);
+	if (p != NULL) {
+		posHook[handle].position = atoi(p);
+	}
+
+	snprintf(cmd, sizeof(cmd), "%d %d %d", handle, x, y);
+	setOSDpos(cmd); 
+
+	return response;
 }
 
 static IMPRgnHandle privacyRgnHandle = -1; // Initialize with an invalid value

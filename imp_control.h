@@ -54,6 +54,8 @@ char *SetChnQpBounds(char *tokenPtr);
 char *SetChnQpIPDelta(char *tokenPtr);
 char *showOSD(char *tokenPtr);
 char *setOSDpos(char *tokenPtr);
+char *getOSD(char *tokenPtr);
+char *setOSD(char *tokenPtr);
 char *setOSDcover(char *tokenPtr);
 char *setOSDalpha(char *tokenPtr);
 char *ControlFisheyeStatus(char *tokenPtr);
@@ -85,11 +87,11 @@ static char *ShowHelp(char *tokenPtr) {
         "aivol                 again                 getevattr             setqpipdelta       \n"
         "aigain                dgain                 getaeluma             setosdalpha        \n"
         "aialc                 hue                   getawbct              setosdpos          \n"
-        "aovol                 ispmode               getafmetrics                             \n"
-        "aogain                flicker               gettotalgain          help               \n"
-        "aohpf                 autozoom              getaeattr             getchnencoder      \n"
-        "flip                  frontcrop             getimpversion         setosdcover        \n"
-        "contrast              mask                  getcpuinfo                               \n"
+        "aovol                 ispmode               getafmetrics          getosd             \n"
+        "aogain                flicker               gettotalgain          setosd             \n"
+        "aohpf                 autozoom              getaeattr             help               \n"
+        "flip                  frontcrop             getimpversion         getchnencoder      \n"
+        "contrast              mask                  getcpuinfo            setosdcover        \n"
         "brightness            whitebalance          getosdattr                               \n"
         "saturation            sensorfps             getosdgrpattr                            \n"
         "sharpness             backlightcomp         getdeviceid                              \n"
@@ -172,6 +174,8 @@ static struct CommandTableSub imp_ControlTable[] = {
 	{ "setosdalpha", &setOSDalpha},
 	{ "setosdshow", &showOSD},
 	{ "setosdpos", &setOSDpos},
+	{ "getosd", &getOSD},
+	{ "setosd", &setOSD},
 	{ "setosdcover", &setOSDcover},
 	// Test
 	{ "test", &Test},
