@@ -1460,6 +1460,7 @@ extern IMPRgnHandle handle;
 int (*original_IMP_OSD_SetRgnAttr)(IMPRgnHandle, IMPOSDRgnAttr*);
 
 // Hook function
+#if !defined (CONFIG_T20) || !defined(CONFIG_T21) || !defined(CONFIG_T23) || !defined(CONFIG_T30)
 int IMP_OSD_SetRgnAttr(IMPRgnHandle handle, IMPOSDRgnAttr *prAttr) {
 	// Dynamically find the original function if not already found
 	if (!original_IMP_OSD_SetRgnAttr) {
@@ -1548,6 +1549,7 @@ int IMP_OSD_SetRgnAttr(IMPRgnHandle handle, IMPOSDRgnAttr *prAttr) {
 	// Call the original function without modification
 	return original_IMP_OSD_SetRgnAttr(handle, prAttr);
 }
+#endif
 
 char *setOSDpos(char *tokenPtr) {
 
