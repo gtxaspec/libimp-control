@@ -4,8 +4,8 @@
 
 # Compiler settings
 CC := $(CROSS_COMPILE)gcc
-CFLAGS := -fPIC -std=gnu99 -shared -ldl -lm -pthread -Os -ffunction-sections -fdata-sections -fomit-frame-pointer
-LDFLAGS := -Wl,--gc-sections
+CFLAGS := -fPIC -std=gnu99 -Os -ffunction-sections -fdata-sections -fomit-frame-pointer
+LDFLAGS := -shared -ldl -lm -pthread -Wl,--gc-sections
 
 # Macro for T10/T20/T30/T21
 ifeq ($(CONFIG_SOC),t21)
