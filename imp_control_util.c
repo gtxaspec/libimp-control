@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <dlfcn.h>
 #include <stdio.h>
 #include "imp_control_util.h"
