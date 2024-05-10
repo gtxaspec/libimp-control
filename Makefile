@@ -19,6 +19,12 @@ else
     CFLAGS += -DCONFIG_T20
 endif
 
+# Check for uClibc and add _GNU_SOURCE if needed
+uclibc_check := $(shell $(CC) -dM -E - < /dev/null | grep -q __UCLIBC__ && echo yes || echo no)
+ifeq ($(uclibc_check),yes)
+	CFLAGS += -D_GNU_SOURCE
+endif
+
 # Source files
 SRCS := command.c imp_control.c imp_control_audio.c imp_control_video.c imp_control_util.c imp_demo.c
 
