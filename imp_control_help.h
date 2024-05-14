@@ -146,28 +146,29 @@
 		"Description: Controls the visibility of the OSD (On-Screen Display) in a specific OSD group. The function sets the OSD to be visible or hidden based on the given flag.\n" \
 		"Returns: Confirmation message on successful change of visibility, or an error message in case of failure or invalid input."
 
-#define HELP_MESSAGE_SETOSD_POS "Usage: setOSDpos [RegionHandle] [x] [y]\n" \
+#define HELP_MESSAGE_SETOSD_POS "Usage: setOSDpos [RegionHandle] [x] [y] [hooked]\n" \
 		"RegionHandle: The handle identifier of the OSD region.\n" \
-		"x: X-coordinate for the top-left corner of the OSD region\n" \
-		"y: Y-coordinate for the top-left corner of the OSD region\n" \
-		"Description: Sets the position of the OSD (On-Screen Display) region. The function updates the OSD region's top-left coordinates.\n" \
+		"x: X-coordinate for OSD region, 0: centered, less than 0: left-aligned, greater than 0: right-aligned.\n" \
+		"y: Y-coordinate for OSD region, 0: centered, less than 0: left-aligned, greater than 0: right-aligned.\n" \
 		"Returns: Confirmation message indicating that the position update is done, or an error message in case of missing parameters."
 
 #define HELP_MESSAGE_GETOSD "Usage: getOSD [RegionHandle]\n" \
 		"RegionHandle: The handle identifier of the OSD region.\n" \
-		"fgAlpha: Foreground alpha value (0-255).\n" \
-		"show: show or hide the region.\n" \
-		"x: X-coordinate for the top-left corner of the OSD region\n" \
-		"y: Y-coordinate for the top-left corner of the OSD region\n" \
+		"\nreturns:	<RegionHandle> <show> <x> <y> <hooked>\n" \
+		"  fgAlpha:	Foreground alpha value (0-255).\n" \
+		"  show:	show or hide the region.\n" \
+		"  x:		X-coordinate for OSD region, 0: centered, less than 0: left-aligned, greater than 0: right-aligned.\n" \
+		"  y:		Y-coordinate for OSD region, 0: centered, less than 0: left-aligned, greater than 0: right-aligned.\n" \
+		"  hooked: indicates whether the OSD item positioning is hooked via IMP. \n" \
 		"Description: Gets the show flag, alpha attributes and position information for a specified OSD group region.\n" \
 		"Returns: Confirmation message on successful setting of attributes, or an error message in case of failure."
 
-#define HELP_MESSAGE_SETOSD "Usage: setOSD [RegionHandle] [show] [fgAlpha] [x] [y]\n" \
+#define HELP_MESSAGE_SETOSD "Usage: setOSD [RegionHandle] [show] [fgAlpha] [x] [y] [hooked]\n" \
 		"RegionHandle: The handle identifier of the OSD region.\n" \
 		"fgAlpha: Foreground alpha value (0-255).\n" \
 		"show: show or hide the region.\n" \
-		"x: X-coordinate for the top-left corner of the OSD region\n" \
-		"y: Y-coordinate for the top-left corner of the OSD region\n" \
+		"x: X-coordinate for OSD region, 0: centered, less than 0: left-aligned, greater than 0: right-aligned.\n" \
+		"y: Y-coordinate for OSD region, 0: centered, less than 0: left-aligned, greater than 0: right-aligned.\n" \
 		"Description: Sets the show flag, alpha attributes and position information for a specified OSD group region. This includes enabling/disabling alpha and setting the foreground alpha level.\n" \
 		"Returns: Confirmation message on successful setting of attributes, or an error message in case of failure."
 
