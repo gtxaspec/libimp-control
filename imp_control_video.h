@@ -259,13 +259,9 @@ extern int IMP_ISP_Tuning_GetAeAttr(IMPISPAEAttr *ae);
 
 //OSD position hook data
 typedef struct {
-	int x;
-	int y;
-	uint8_t	position;  
-	//position
-	//		   0=fixed, 1=top, 2=topright, 3=right
-	//         4=bottomright, 5=bottom, 6=bottomleft
-	//		   7=left, 8=topleft	  
+	int x;   //pos x
+	int y;   //pos y
+	int	act; //osd pos hook active  	  
 } IMPOSDPosHook;
 
 /*
