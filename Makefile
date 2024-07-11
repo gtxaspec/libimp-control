@@ -11,7 +11,7 @@ LDFLAGS := -Wl,--gc-sections
 ifeq ($(CONFIG_SOC),t21)
     # If CONFIG_SOC is T21
     CFLAGS += -DCONFIG_T20 -DCONFIG_T21
-else ifeq ($(filter $(CONFIG_SOC),t10 t20 t30),)
+else ifeq ($(filter $(CONFIG_SOC),t10 t20 t23 t30),)
     # If CONFIG_SOC is NOT T10/T20/T30 (implies T31 or others)
     CFLAGS += -DCONFIG_T31
 else
