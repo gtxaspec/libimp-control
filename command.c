@@ -60,7 +60,7 @@ static void *CommandThread(void *arg) {
 	// Define the server address structure
 	struct sockaddr_in saddr = {.sin_family = AF_INET,
 								.sin_port = htons(CommandPort),
-								.sin_addr.s_addr = htonl(INADDR_ANY)};
+								.sin_addr.s_addr = inet_addr("127.0.0.1")}; // Bind only to localhost
 
 	// Bind the socket to the specified address and port
 	if (bind(listenSocket, (struct sockaddr *)&saddr, sizeof(saddr)) < 0) {
