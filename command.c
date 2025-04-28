@@ -18,6 +18,12 @@
 #include "imp_control_util.h"
 #include <libgen.h>
 
+#if defined(__UCLIBC__)
+	#ifndef RTLD_NEXT
+		#define RTLD_NEXT ((void *) -1l)
+	#endif
+#endif
+
 // Define the maximum number of events that epoll_wait can return at a time.
 // This number represents the capacity of the event array used for handling
 // file descriptor events in the epoll mechanism.

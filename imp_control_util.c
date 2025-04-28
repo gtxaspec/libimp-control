@@ -2,6 +2,12 @@
 #include <stdio.h>
 #include "imp_control_util.h"
 
+#if defined(__UCLIBC__)
+	#ifndef RTLD_NEXT
+		#define RTLD_NEXT ((void *) -1l)
+	#endif
+#endif
+
 char* GetDeviceID() {
 	SUDevID devID;
 	int ret = SU_Base_GetDevID(&devID);
